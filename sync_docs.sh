@@ -83,7 +83,7 @@ sync_file() {
             if [[ -n "$icon" ]]; then
                 echo "icon: $icon"
             fi
-            echo "title: $title"
+            echo "title: \"$title\""
             echo "---"
             echo ""
             cat "$source"
