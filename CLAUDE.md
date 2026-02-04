@@ -1,6 +1,6 @@
 # Portfolio Project Structure - Instructions for Claude
 
-This document provides context and guidelines for working on Christos's DevOps/SRE portfolio projects. These projects demonstrate skills for transitioning from telecommunications DevOps to IT industries (aerospace, defense, fintech, healthcare tech) with fully remote opportunities.
+This document provides context and guidelines for working on Christos's DevOps/SRE portfolio projects. These projects demonstrate skills for transitioning from telecommunications DevOps to industries such as aerospace, defense, fintech, healthcare and other sectors with longer time-to-market.
 
 ## 🎯 Career Goals Context
 
@@ -165,30 +165,30 @@ portfolio-root/
 ### Every Project Should Have:
 
 1. **README.md** at root level containing:
-   - Project overview and purpose
-   - Technologies used
-   - Quick start guide
-   - Architecture overview
-   - Links to detailed documentation
+    - Project overview and purpose
+    - Technologies used
+    - Quick start guide
+    - Architecture overview
+    - Links to detailed documentation
 
 2. **docs/** directory with:
-   - Detailed documentation
-   - Architecture diagrams (when applicable)
-   - Deployment guides
-   - Troubleshooting guides
-   - Interview talking points
+    - Detailed documentation
+    - Architecture diagrams (when applicable)
+    - Deployment guides
+    - Troubleshooting guides
+    - Interview talking points
 
 3. **Code quality**:
-   - Clear comments explaining complex logic
-   - Consistent formatting
-   - Security best practices
-   - Error handling
-   - Logging where appropriate
+    - Clear comments explaining complex logic
+    - Consistent formatting
+    - Security best practices
+    - Error handling
+    - Logging where appropriate
 
 4. **Configuration files**:
-   - `.gitignore` (exclude secrets, temporary files)
-   - Example configuration files (`.example` suffix)
-   - Clear documentation of required variables
+    - `.gitignore` (exclude secrets, temporary files)
+    - Example configuration files (`.example` suffix)
+    - Clear documentation of required variables
 
 ## 🔐 Security Guidelines
 
