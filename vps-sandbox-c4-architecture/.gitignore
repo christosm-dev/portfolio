@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Generated diagrams
+*.png
+*.svg
+*.pdf
+diagrams/output/
+
+# Structurizr generated files
+.structurizr/
+*.dsl.json
+*.dsl.dsl
+workspace.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.log

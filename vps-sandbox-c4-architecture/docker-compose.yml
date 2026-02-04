@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  structurizr-lite:
+    image: structurizr/lite
+    container_name: structurizr-lite
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/usr/local/structurizr
+    restart: unless-stopped
+
+# Usage:
+# 1. Start: docker-compose up -d
+# 2. View: Open http://localhost:8080 in your browser
+# 3. Stop: docker-compose down
+#
+# The workspace.dsl file will be automatically loaded and rendered
