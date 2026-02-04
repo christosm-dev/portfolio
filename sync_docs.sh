@@ -123,7 +123,7 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/01-terraform-docker-nginx/index.md" \
-        "Terraform Docker NGINX" \
+        "Project 1: Terraform + Docker" \
         "simple/terraform"
 
     if [[ -f "$PROJECT_DIR/VARIABLES_GUIDE.md" ]]; then
@@ -147,7 +147,7 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/02-k8s-python-app/index.md" \
-        "Kubernetes Python App" \
+        "Project 2: Kubernetes - Deploy Python Flask App to Minikube" \
         "simple/kubernetes"
 else
     log_warning "Project directory not found: $PROJECT_DIR"
@@ -164,7 +164,7 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/03-ansible-docker-demo/index.md" \
-        "Ansible Docker Demo" \
+        "Project 3: Ansible Docker Demo" \
         "simple/ansible"
 
     if [[ -f "$PROJECT_DIR/LEARNING_NOTES.md" ]]; then
@@ -178,9 +178,9 @@ else
 fi
 
 # ============================================================================
-# Sync VPS Sandbox Platform
+# Sync VPS Demo Sandbox Platform
 # ============================================================================
-log_info "Syncing VPS Sandbox Platform"
+log_info "Syncing VPS Demo Sandbox Platform"
 PROJECT_DIR="$PORTFOLIO_ROOT/vps-sandbox-platform"
 
 if [[ -d "$PROJECT_DIR" ]]; then
@@ -189,7 +189,7 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/vps-sandbox-platform/index.md" \
-        "VPS Sandbox Platform" \
+        "VPS Demo Sandbox Platform" \
         "material/server-security"
 
     if [[ -f "$PROJECT_DIR/GETTING_STARTED.md" ]]; then
