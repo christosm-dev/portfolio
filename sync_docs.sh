@@ -64,6 +64,7 @@ sync_file() {
     local source="$1"
     local dest="$2"
     local title="$3"
+    local icon="${4:-}"  # Optional icon parameter
 
     if [[ ! -f "$source" ]]; then
         log_warning "Source not found: $source"
@@ -74,11 +75,14 @@ sync_file() {
     # Create destination directory
     mkdir -p "$(dirname "$dest")"
 
-    # Check if file needs frontmatter
-    if ! grep -q "^---" "$source" 2>/dev/null; then
-        # Add frontmatter
+    # Check if file needs frontmatter (check only first line)
+    if ! head -n 1 "$source" | grep -q "^---"; then
+        # Add frontmatter with optional icon
         {
             echo "---"
+            if [[ -n "$icon" ]]; then
+                echo "icon: $icon"
+            fi
             echo "title: $title"
             echo "---"
             echo ""
@@ -119,7 +123,8 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/01-terraform-docker-nginx/index.md" \
-        "Terraform Docker NGINX"
+        "Terraform Docker NGINX" \
+        "simple/terraform"
 
     if [[ -f "$PROJECT_DIR/VARIABLES_GUIDE.md" ]]; then
         sync_file \
@@ -142,7 +147,8 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/02-k8s-python-app/index.md" \
-        "Kubernetes Python App"
+        "Kubernetes Python App" \
+        "simple/kubernetes"
 else
     log_warning "Project directory not found: $PROJECT_DIR"
 fi
@@ -158,7 +164,8 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/03-ansible-docker-demo/index.md" \
-        "Ansible Docker Demo"
+        "Ansible Docker Demo" \
+        "simple/ansible"
 
     if [[ -f "$PROJECT_DIR/LEARNING_NOTES.md" ]]; then
         sync_file \
@@ -182,7 +189,8 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/vps-sandbox-platform/index.md" \
-        "VPS Sandbox Platform"
+        "VPS Sandbox Platform" \
+        "material/server-security"
 
     if [[ -f "$PROJECT_DIR/GETTING_STARTED.md" ]]; then
         sync_file \
