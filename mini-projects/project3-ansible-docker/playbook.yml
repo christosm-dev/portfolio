@@ -1,0 +1,78 @@
+---
+# Playbook: Install and Configure Nginx Web Server
+# This playbook demonstrates common Ansible patterns and best practices
+
+- name: Configure Web Servers
+  hosts: webservers
+  become: yes
+  
+  vars:
+    # Variables for customization
+    nginx_port: 80
+    document_root: /var/www/html
+    site_name: "Ansible Demo Site"
+    
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      tags: [setup]
+    
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+      tags: [nginx]
+      notify: Start nginx
+    
+    - name: Create custom index.html
+      template:
+        src: templates/index.html.j2
+        dest: "{{ document_root }}/index.html"
+        mode: '0644'
+      tags: [nginx, content]
+      notify: Reload nginx
+    
+    - name: Create custom nginx configuration
+      template:
+        src: templates/nginx-site.conf.j2
+        dest: /etc/nginx/sites-available/default
+        mode: '0644'
+      tags: [nginx, config]
+      notify: Reload nginx
+    
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      tags: [nginx]
+    
+    - name: Create a custom directory
+      file:
+        path: /opt/ansible-demo
+        state: directory
+        mode: '0755'
+      tags: [setup]
+    
+    - name: Copy a sample file
+      copy:
+        content: |
+          This file was created by Ansible on {{ ansible_date_time.iso8601 }}
+          Hostname: {{ ansible_hostname }}
+          IP Address: {{ ansible_default_ipv4.address | default('N/A') }}
+        dest: /opt/ansible-demo/info.txt
+        mode: '0644'
+      tags: [setup]
+    
+  handlers:
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started
+    
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded

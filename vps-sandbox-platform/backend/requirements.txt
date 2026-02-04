@@ -1,0 +1,15 @@
+# Zensical Sandbox Platform - Backend Dependencies
+
+# FastAPI and ASGI server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Docker SDK for Python
+docker==7.0.0
+
+# Data validation
+pydantic==2.5.3
+
+# Additional utilities
+python-multipart==0.0.6  # For form data handling
+aiofiles==23.2.1  # Async file operations

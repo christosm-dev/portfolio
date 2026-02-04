@@ -1,0 +1,16 @@
+server {
+    listen {{ nginx_port }} default_server;
+    listen [::]:{{ nginx_port }} default_server;
+
+    root {{ document_root }};
+    index index.html index.htm;
+
+    server_name {{ server_name }};
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # Managed by Ansible
+    # Last updated: {{ ansible_date_time.iso8601 }}
+}

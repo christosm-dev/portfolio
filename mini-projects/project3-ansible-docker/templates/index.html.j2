@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+        }
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .info-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        .label {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 {{ site_name }}</h1>
+        <p>This page was deployed using <strong>Ansible</strong> automation!</p>
+        
+        <div class="info-box">
+            <h2>Server Information</h2>
+            <div class="info-item">
+                <span class="label">Hostname:</span> {{ ansible_hostname }}
+            </div>
+            <div class="info-item">
+                <span class="label">Operating System:</span> {{ ansible_distribution }} {{ ansible_distribution_version }}
+            </div>
+            <div class="info-item">
+                <span class="label">IP Address:</span> {{ ansible_default_ipv4.address | default('N/A') }}
+            </div>
+            <div class="info-item">
+                <span class="label">Port:</span> {{ nginx_port }}
+            </div>
+            <div class="info-item">
+                <span class="label">Deployed:</span> {{ ansible_date_time.iso8601 }}
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h2>Project Information</h2>
+            <p><strong>Project:</strong> 3 of 7 - Ansible Certification Training</p>
+            <p><strong>Goal:</strong> Learn configuration management and automation</p>
+        </div>
+
+        <div class="footer">
+            <p>⚡ Powered by Ansible Automation</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Backend API service
+  sandbox-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: zensical-sandbox-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount Docker socket to allow container creation
+      # NOTE: This grants significant privileges - ensure host security
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Optional: Mount for logs
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    networks:
+      - sandbox-network
+    labels:
+      - "com.zensical.service=sandbox-api"
+      - "com.zensical.environment=production"
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits for the API itself
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Optional: NGINX reverse proxy (for production)
+  # Uncomment to enable SSL termination and better security
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: zensical-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - sandbox-api
+  #   networks:
+  #     - sandbox-network
+  #   restart: unless-stopped
+
+networks:
+  sandbox-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes for persistent data
+volumes:
+  logs:

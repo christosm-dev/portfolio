@@ -1,0 +1,15 @@
+# terraform.tfvars - Custom variable values
+# This file allows you to override default variable values
+# Rename this to terraform.tfvars to use it
+
+# Example: Run nginx on a different port
+external_port = 9090
+
+# Example: Use a different container name
+container_name = "my-custom-nginx"
+
+# Example: Use a specific nginx version
+# image_name = "nginx:1.25"
+
+# Example: Keep the image after terraform destroy
+# keep_image_locally = true

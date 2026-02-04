@@ -1,0 +1,46 @@
+#!/bin/bash
+# ============================================================================
+# Pre-commit Hook for Portfolio Documentation Sync
+# ============================================================================
+# This hook automatically syncs documentation from project folders to
+# christosm.dev before each commit, ensuring the static site is always
+# up-to-date.
+#
+# To disable this hook temporarily:
+#   git commit --no-verify
+# ============================================================================
+
+# Get the repository root
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Path to sync script
+SYNC_SCRIPT="$REPO_ROOT/sync_docs.sh"
+
+echo "🔄 Pre-commit: Syncing documentation..."
+echo ""
+
+# Run the sync script
+if [[ -f "$SYNC_SCRIPT" ]]; then
+    if bash "$SYNC_SCRIPT" --quiet; then
+        echo "✅ Documentation synced successfully"
+
+        # Add synced files to staging area (if christosm.dev is not a separate repo)
+        if [[ ! -d "$REPO_ROOT/christosm.dev/.git" ]]; then
+            cd "$REPO_ROOT/christosm.dev/docs" && git add -A
+        fi
+
+        echo ""
+        exit 0
+    else
+        echo ""
+        echo "❌ Documentation sync failed!"
+        echo "   Fix the errors above or use 'git commit --no-verify' to skip"
+        echo ""
+        exit 1
+    fi
+else
+    echo "⚠️  Warning: sync_docs.sh not found at $SYNC_SCRIPT"
+    echo "   Proceeding with commit anyway..."
+    echo ""
+    exit 0
+fi

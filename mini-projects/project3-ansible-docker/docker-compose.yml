@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Target container 1
+  target1:
+    build: ./target
+    container_name: ansible-target1
+    hostname: target1
+    ports:
+      - "2221:22"   # SSH
+      - "8081:80"   # Nginx web server
+    networks:
+      - ansible-net
+
+  # Target container 2
+  target2:
+    build: ./target
+    container_name: ansible-target2
+    hostname: target2
+    ports:
+      - "2222:22"   # SSH
+      - "8082:80"   # Nginx web server
+    networks:
+      - ansible-net
+
+  # Target container 3
+  target3:
+    build: ./target
+    container_name: ansible-target3
+    hostname: target3
+    ports:
+      - "2223:22"   # SSH
+      - "8083:80"   # Nginx web server
+    networks:
+      - ansible-net
+
+networks:
+  ansible-net:
+    driver: bridge

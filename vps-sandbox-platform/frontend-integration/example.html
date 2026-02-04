@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zensical Sandbox - Interactive Code Execution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .editor-container {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .output-container {
+            background: #1e1e1e;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 200px;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .output-header h3 {
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-timeout {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-loading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .execution-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .examples h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .example-button {
+            padding: 8px 15px;
+            margin: 5px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-button:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Zensical Sandbox</h1>
+            <p>Secure, Interactive Code Execution Platform</p>
+        </header>
+
+        <div class="content">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="environment">Environment:</label>
+                    <select id="environment">
+                        <option value="python">Python 3.11</option>
+                        <option value="node">Node.js 18</option>
+                        <option value="bash">Bash 5.2</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="timeout">Timeout:</label>
+                    <select id="timeout">
+                        <option value="10">10 seconds</option>
+                        <option value="30" selected>30 seconds</option>
+                        <option value="60">60 seconds</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="editor-container">
+                <textarea id="code-editor" placeholder="Enter your code here...">print("Hello from Zensical Sandbox!")
+print("This code runs in an isolated, secure container.")
+
+# Try some Python!
+for i in range(5):
+    print(f"Count: {i}")</textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="run-button" onclick="executeCode()">
+                    <span id="run-icon">▶</span>
+                    <span id="run-text">Run Code</span>
+                </button>
+                <button class="btn-secondary" onclick="clearOutput()">
+                    Clear Output
+                </button>
+            </div>
+
+            <div class="output-header">
+                <h3>Output</h3>
+                <span id="status" class="status" style="display: none;"></span>
+            </div>
+            <div class="output-container" id="output">
+                <span style="color: #888;">Output will appear here...</span>
+            </div>
+
+            <div id="execution-info" class="execution-info" style="display: none;"></div>
+
+            <div class="examples">
+                <h3>📝 Quick Examples</h3>
+                <button class="example-button" onclick="loadExample('python-fib')">
+                    Python: Fibonacci
+                </button>
+                <button class="example-button" onclick="loadExample('python-prime')">
+                    Python: Prime Numbers
+                </button>
+                <button class="example-button" onclick="loadExample('node-json')">
+                    Node.js: JSON Processing
+                </button>
+                <button class="example-button" onclick="loadExample('node-async')">
+                    Node.js: Async/Await
+                </button>
+                <button class="example-button" onclick="loadExample('bash-system')">
+                    Bash: System Info
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            Built with ❤️ by Christos | Demonstrating DevOps & Platform Engineering Skills
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Update this with your VPS IP
+        const API_BASE_URL = 'http://localhost:8000';  // Change to your VPS IP in production
+
+        // Example code snippets
+        const examples = {
+            'python-fib': {
+                environment: 'python',
+                code: `# Fibonacci sequence generator
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print("First 15 Fibonacci numbers:")
+for i in range(15):
+    print(f"F({i:2d}) = {fibonacci(i):4d}")`
+            },
+            'python-prime': {
+                environment: 'python',
+                code: `# Prime number finder
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+print("Prime numbers up to 100:")
+primes = [n for n in range(2, 101) if is_prime(n)]
+print(primes)
+print(f"\\nTotal: {len(primes)} primes")`
+            },
+            'node-json': {
+                environment: 'node',
+                code: `// JSON data processing
+const data = {
+    project: "Zensical Sandbox",
+    technologies: ["Docker", "FastAPI", "Terraform"],
+    features: {
+        isolation: true,
+        security: "high",
+        resourceLimits: {
+            cpu: "50%",
+            memory: "256MB"
+        }
+    }
+};
+
+console.log("Project Data:");
+console.log(JSON.stringify(data, null, 2));
+
+console.log("\\nTechnologies:");
+data.technologies.forEach((tech, i) => {
+    console.log(\`  \${i + 1}. \${tech}\`);
+});`
+            },
+            'node-async': {
+                environment: 'node',
+                code: `// Async/Await example
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function countdown() {
+    console.log("Starting countdown...");
+    
+    for (let i = 5; i > 0; i--) {
+        console.log(\`\${i}...\`);
+        await delay(500);
+    }
+    
+    console.log("🚀 Liftoff!");
+}
+
+countdown().then(() => {
+    console.log("\\nCountdown complete!");
+});`
+            },
+            'bash-system': {
+                environment: 'bash',
+                code: `#!/bin/bash
+# System information script
+
+echo "=== Container Information ==="
+echo "Hostname: $(hostname)"
+echo "User: $(whoami)"
+echo "Shell: $SHELL"
+echo ""
+
+echo "=== Available Tools ==="
+which bash sh cat echo ls pwd
+
+echo ""
+echo "=== Directory Listing ==="
+ls -la /tmp
+
+echo ""
+echo "=== Environment ==="
+echo "PATH: $PATH"`
+            }
+        };
+
+        // Load example code
+        function loadExample(exampleId) {
+            const example = examples[exampleId];
+            if (example) {
+                document.getElementById('code-editor').value = example.code;
+                document.getElementById('environment').value = example.environment;
+            }
+        }
+
+        // Execute code
+        async function executeCode() {
+            const code = document.getElementById('code-editor').value;
+            const environment = document.getElementById('environment').value;
+            const timeout = parseInt(document.getElementById('timeout').value);
+            
+            if (!code.trim()) {
+                alert('Please enter some code to execute');
+                return;
+            }
+
+            // Update UI - execution starting
+            const runButton = document.getElementById('run-button');
+            const runIcon = document.getElementById('run-icon');
+            const runText = document.getElementById('run-text');
+            const statusEl = document.getElementById('status');
+            const outputEl = document.getElementById('output');
+            const infoEl = document.getElementById('execution-info');
+
+            runButton.disabled = true;
+            runIcon.innerHTML = '<span class="spinner"></span>';
+            runText.textContent = 'Executing...';
+            
+            statusEl.style.display = 'inline-block';
+            statusEl.className = 'status status-loading';
+            statusEl.textContent = 'Running...';
+            
+            outputEl.style.color = '#888';
+            outputEl.textContent = 'Executing code in secure sandbox...';
+            infoEl.style.display = 'none';
+
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/execute`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        environment: environment,
+                        timeout: timeout
+                    })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+                    }
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const executionTime = Date.now() - startTime;
+
+                // Update status
+                statusEl.className = `status status-${result.status}`;
+                statusEl.textContent = result.status.charAt(0).toUpperCase() + result.status.slice(1);
+
+                // Display output
+                if (result.status === 'success') {
+                    outputEl.style.color = '#4ec9b0';
+                    outputEl.textContent = result.output || '(no output)';
+                } else if (result.status === 'error') {
+                    outputEl.style.color = '#f48771';
+                    outputEl.textContent = result.error || 'Unknown error';
+                } else if (result.status === 'timeout') {
+                    outputEl.style.color = '#dcdcaa';
+                    outputEl.textContent = (result.output || '') + '\n\n⏱️ Execution timed out';
+                }
+
+                // Display execution info
+                infoEl.style.display = 'block';
+                infoEl.innerHTML = `
+                    <strong>Execution ID:</strong> ${result.execution_id}<br>
+                    <strong>Environment:</strong> ${result.environment}<br>
+                    <strong>Execution Time:</strong> ${result.execution_time}s<br>
+                    <strong>Client Time:</strong> ${(executionTime / 1000).toFixed(2)}s
+                `;
+
+            } catch (error) {
+                console.error('Execution error:', error);
+                
+                statusEl.className = 'status status-error';
+                statusEl.textContent = 'Error';
+                
+                outputEl.style.color = '#f48771';
+                outputEl.textContent = `Failed to execute code:\n${error.message}\n\nPlease check:\n1. API is running at ${API_BASE_URL}\n2. CORS is configured correctly\n3. Network connection is active`;
+            } finally {
+                // Reset button
+                runButton.disabled = false;
+                runIcon.textContent = '▶';
+                runText.textContent = 'Run Code';
+            }
+        }
+
+        // Clear output
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<span style="color: #888;">Output will appear here...</span>';
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('execution-info').style.display = 'none';
+        }
+
+        // Check API health on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const health = await response.json();
+                    console.log('API Health:', health);
+                    if (!health.docker_available) {
+                        alert('Warning: Docker is not available on the API server');
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not connect to API:', error);
+                // Don't show alert on load, just log to console
+            }
+        });
+
+        // Allow Ctrl+Enter to execute
+        document.getElementById('code-editor').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                executeCode();
+            }
+        });
+    </script>
+</body>
+</html>
