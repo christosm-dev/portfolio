@@ -246,7 +246,8 @@ if [[ -f "$PORTFOLIO_ROOT/CLAUDE.md" ]]; then
     sync_file \
         "$PORTFOLIO_ROOT/CLAUDE.md" \
         "$DOCS_DEST/meta/claude-instructions.md" \
-        "Claude Instructions"
+        "Claude Instructions" \
+        "simple/claude"
 fi
 
 if [[ -f "$PORTFOLIO_ROOT/mini-projects/README.md" ]]; then
