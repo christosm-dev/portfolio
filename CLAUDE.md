@@ -7,8 +7,8 @@ This document provides context and guidelines for working on Christos's DevOps/S
 **Current Role**: Telecommunications DevOps/Release Management  
 **Target Roles**: DevOps Engineer, SRE, Cloud Engineer, Platform Engineer, Infrastructure Engineer  
 **Target Industries**: Aerospace/Defense (Surrey, UK), Financial Services, Healthcare Tech, Enterprise SaaS, Government  
-**Location**: Surrey, UK (UK citizenship - suitable for SC clearance)  
-**Work Preference**: Fully remote positions  
+**Location**: Surrey, UK  
+**Work Preference**: Fully remote or hybrid roles  
 
 **Certification Path**:
 - HashiCorp Certified: Terraform Associate (in progress)
