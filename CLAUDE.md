@@ -165,6 +165,7 @@ portfolio-root/
 ### Every Project Should Have:
 
 1. **README.md** at root level containing:
+
     - Project overview and purpose
     - Technologies used
     - Quick start guide
@@ -172,6 +173,7 @@ portfolio-root/
     - Links to detailed documentation
 
 2. **docs/** directory with:
+
     - Detailed documentation
     - Architecture diagrams (when applicable)
     - Deployment guides
@@ -179,6 +181,7 @@ portfolio-root/
     - Interview talking points
 
 3. **Code quality**:
+
     - Clear comments explaining complex logic
     - Consistent formatting
     - Security best practices
@@ -186,6 +189,7 @@ portfolio-root/
     - Logging where appropriate
 
 4. **Configuration files**:
+
     - `.gitignore` (exclude secrets, temporary files)
     - Example configuration files (`.example` suffix)
     - Clear documentation of required variables
