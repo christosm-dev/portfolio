@@ -231,6 +231,38 @@ else
 fi
 
 # ============================================================================
+# Sync C4 Literate Python Project
+# ============================================================================
+log_info "Syncing C4 Literate Python Project"
+PROJECT_DIR="$PORTFOLIO_ROOT/c4-literate-python"
+
+if [[ -d "$PROJECT_DIR" ]]; then
+    mkdir -p "$DOCS_DEST/projects/c4-literate-python"
+
+    sync_file \
+        "$PROJECT_DIR/README.md" \
+        "$DOCS_DEST/projects/c4-literate-python/index.md" \
+        "C4 Literate Python" \
+        "simple/python"
+
+    if [[ -f "$PROJECT_DIR/USAGE_EXAMPLE.md" ]]; then
+        sync_file \
+            "$PROJECT_DIR/USAGE_EXAMPLE.md" \
+            "$DOCS_DEST/projects/c4-literate-python/usage-example.md" \
+            "Usage Example"
+    fi
+
+    if [[ -f "$PROJECT_DIR/SCHEMA.md" ]]; then
+        sync_file \
+            "$PROJECT_DIR/SCHEMA.md" \
+            "$DOCS_DEST/projects/c4-literate-python/schema.md" \
+            "Schema Documentation"
+    fi
+else
+    log_warning "Project directory not found: $PROJECT_DIR"
+fi
+
+# ============================================================================
 # Sync Portfolio Root Documentation
 # ============================================================================
 log_info "Syncing Portfolio Root Documentation"
