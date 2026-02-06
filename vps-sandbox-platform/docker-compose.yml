@@ -185,6 +185,7 @@ services:
 # =============================================================================
 networks:
   sandbox-network:
+    name: sandbox-network
     driver: bridge
     ipam:
       config:
