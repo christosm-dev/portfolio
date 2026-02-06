@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # =============================================================================
   # Traefik - Reverse Proxy & Load Balancer
   # =============================================================================
   traefik:
-    image: traefik:v3.3
+    image: traefik:latest
     container_name: traefik
     command:
       # API and Dashboard
