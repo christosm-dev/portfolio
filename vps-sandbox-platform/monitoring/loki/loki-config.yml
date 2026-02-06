@@ -11,26 +11,27 @@ common:
   path_prefix: /loki
   replication_factor: 1
   ring:
-    instance_addr: 0.0.0.0
+    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
 
 schema_config:
   configs:
     - from: "2024-01-01"
-      store: tsdb
+      store: boltdb-shipper
       object_store: filesystem
-      schema: v13
+      schema: v11
       index:
         prefix: index_
         period: 24h
 
 storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/boltdb-shipper-active
+    cache_location: /loki/boltdb-shipper-cache
+    shared_store: filesystem
   filesystem:
     directory: /loki/chunks
-  tsdb_shipper:
-    active_index_directory: /loki/tsdb-index
-    cache_location: /loki/tsdb-cache
 
 limits_config:
   retention_period: 360h
@@ -41,10 +42,10 @@ limits_config:
 
 compactor:
   working_directory: /loki/compactor
+  shared_store: filesystem
   compaction_interval: 10m
   retention_enabled: true
   retention_delete_delay: 2h
-  delete_request_store: filesystem
 
 analytics:
   reporting_enabled: false
