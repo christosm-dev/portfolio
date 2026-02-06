@@ -1,0 +1,71 @@
+# Promtail Configuration for VPS Sandbox Platform
+# =================================================
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: warn
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # =========================================================================
+  # Docker Container Logs (via service discovery)
+  # =========================================================================
+  - job_name: docker-sd
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: status
+            values: ["running"]
+    relabel_configs:
+      # Use container name as the primary label
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      # Add compose service name
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: 'service'
+      # Add compose project name
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_project']
+        target_label: 'project'
+      # Add container ID (short form)
+      - source_labels: ['__meta_docker_container_id']
+        regex: '(.{12}).*'
+        target_label: 'container_id'
+    pipeline_stages:
+      - docker: {}
+
+  # =========================================================================
+  # Host System Logs
+  # =========================================================================
+  - job_name: syslog
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: syslog
+          host: vps
+          __path__: /var/log/host/syslog
+
+  - job_name: authlog
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: authlog
+          host: vps
+          __path__: /var/log/host/auth.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+)\s+\S+\s+(?P<process>\S+?)(\[(?P<pid>\d+)\])?\:\s+(?P<message>.*)$'
+      - labels:
+          process:
+      - timestamp:
+          source: timestamp
+          format: 'Jan  2 15:04:05'

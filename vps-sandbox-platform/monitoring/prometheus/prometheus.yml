@@ -42,6 +42,12 @@ scrape_configs:
     #   username: prometheus
     #   password: secret
 
+  # Loki metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+    metrics_path: /metrics
+
   # Docker daemon metrics (requires daemon configuration)
   # - job_name: 'docker'
   #   static_configs:
