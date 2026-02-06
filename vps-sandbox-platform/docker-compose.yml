@@ -10,13 +10,20 @@ services:
     command:
       # API and Dashboard
       - "--api.dashboard=true"
-      - "--api.insecure=true"
       # Docker provider
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=sandbox-network"
       # Entrypoints
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP to HTTPS redirect
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.email=laptop-yodel-chilli@duck.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
       # Logging
       - "--log.level=INFO"
       - "--accesslog=true"
@@ -25,13 +32,19 @@ services:
       - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
     ports:
       - "80:80"
-      - "8080:8080"  # Traefik dashboard
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt-data:/letsencrypt
     networks:
       - sandbox-network
     labels:
       - "traefik.enable=true"
+      # Traefik Dashboard
+      - "traefik.http.routers.traefik.rule=Host(`traefik.sandbox.christosm.dev`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -44,8 +57,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: sandbox-api
-    ports:
-      - "8000:8000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./logs:/app/logs
@@ -56,8 +67,9 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sandbox-api.rule=Host(`api.localhost`)"
-      - "traefik.http.routers.sandbox-api.entrypoints=web"
+      - "traefik.http.routers.sandbox-api.rule=Host(`api.sandbox.christosm.dev`)"
+      - "traefik.http.routers.sandbox-api.entrypoints=websecure"
+      - "traefik.http.routers.sandbox-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.sandbox-api.loadbalancer.server.port=8000"
     restart: unless-stopped
     security_opt:
@@ -83,8 +95,6 @@ services:
       - '--storage.tsdb.retention.time=15d'
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
-    ports:
-      - "9090:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/prometheus/alerts:/etc/prometheus/alerts:ro
@@ -93,8 +103,9 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
-      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.sandbox.christosm.dev`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
     restart: unless-stopped
     security_opt:
@@ -118,10 +129,8 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_SERVER_ROOT_URL=https://grafana.sandbox.christosm.dev
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
-    ports:
-      - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -130,8 +139,9 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
-      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.sandbox.christosm.dev`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     restart: unless-stopped
     security_opt:
@@ -152,8 +162,6 @@ services:
     image: portainer/portainer-ce:2.11.1
     container_name: portainer
     command: -H unix:///var/run/docker.sock
-    ports:
-      - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - portainer-data:/data
@@ -161,8 +169,9 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      - "traefik.http.routers.portainer.entrypoints=web"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.sandbox.christosm.dev`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
     restart: unless-stopped
     security_opt:
@@ -185,4 +194,5 @@ volumes:
   prometheus-data:
   grafana-data:
   portainer-data:
+  letsencrypt-data:
   logs:
