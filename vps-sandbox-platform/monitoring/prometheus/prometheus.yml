@@ -1,0 +1,58 @@
+# Prometheus Configuration for VPS Sandbox Platform
+# =================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'vps-sandbox-platform'
+
+# Alertmanager configuration (uncomment when alertmanager is added)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+
+  # Traefik metrics
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+    metrics_path: /metrics
+
+  # Sandbox API metrics (if exposing /metrics endpoint)
+  - job_name: 'sandbox-api'
+    static_configs:
+      - targets: ['sandbox-api:8000']
+    metrics_path: /metrics
+    # Uncomment if API requires authentication for metrics
+    # basic_auth:
+    #   username: prometheus
+    #   password: secret
+
+  # Docker daemon metrics (requires daemon configuration)
+  # - job_name: 'docker'
+  #   static_configs:
+  #     - targets: ['host.docker.internal:9323']
+
+  # Node exporter (add node-exporter container for host metrics)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+
+  # cAdvisor (add cadvisor container for container metrics)
+  # - job_name: 'cadvisor'
+  #   static_configs:
+  #     - targets: ['cadvisor:8080']
