@@ -44,7 +44,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Traefik Dashboard
-      - "traefik.http.routers.traefik.rule=Host(`traefik.sandbox.christosm.dev`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.christosm.dev`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -70,7 +70,7 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sandbox-api.rule=Host(`api.sandbox.christosm.dev`)"
+      - "traefik.http.routers.sandbox-api.rule=Host(`api.christosm.dev`)"
       - "traefik.http.routers.sandbox-api.entrypoints=websecure"
       - "traefik.http.routers.sandbox-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.sandbox-api.loadbalancer.server.port=8000"
@@ -106,7 +106,7 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.sandbox.christosm.dev`)"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.christosm.dev`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
@@ -132,7 +132,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=https://grafana.sandbox.christosm.dev
+      - GF_SERVER_ROOT_URL=https://grafana.christosm.dev
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
     volumes:
       - grafana-data:/var/lib/grafana
@@ -142,7 +142,7 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.sandbox.christosm.dev`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.christosm.dev`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
@@ -172,7 +172,7 @@ services:
       - sandbox-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.sandbox.christosm.dev`)"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.christosm.dev`)"
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
