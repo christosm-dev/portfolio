@@ -15,38 +15,55 @@ This platform enables portfolio visitors to execute code examples in isolated, s
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  Internet                       │
-└────────────────┬────────────────────────────────┘
-                 │
-                 ▼
-┌────────────────────────────────────────────────┐
-│              Contabo VPS                       │
-│  ┌──────────────────────────────────────────┐ │
-│  │     Docker Compose Stack                 │ │
-│  │                                          │ │
-│  │  ┌────────────┐                         │ │
-│  │  │  FastAPI   │ ◄─── HTTP Requests      │ │
-│  │  │   Backend  │                         │ │
-│  │  └─────┬──────┘                         │ │
-│  │        │                                │ │
-│  │        │ Creates sandboxes              │ │
-│  │        ▼                                │ │
-│  │  ┌──────────────────────────┐          │ │
-│  │  │  Ephemeral Containers    │          │ │
-│  │  │  - Python 3.11           │          │ │
-│  │  │  - Node.js 18            │          │ │
-│  │  │  - Bash 5.2              │          │ │
-│  │  │                          │          │ │
-│  │  │  Security:               │          │ │
-│  │  │  • No network access     │          │ │
-│  │  │  • Read-only filesystem  │          │ │
-│  │  │  • Resource limits       │          │ │
-│  │  │  • Dropped capabilities  │          │ │
-│  │  └──────────────────────────┘          │ │
-│  └──────────────────────────────────────────┘ │
-└────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                       Internet                              │
+│         *.christosm.dev (Cloudflare Proxied)                │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ HTTPS (port 443)
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Contabo VPS                              │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Traefik (Reverse Proxy + Let's Encrypt TLS)          │  │
+│  │  - Cloudflare DNS Challenge for certificates          │  │
+│  │  - HTTP → HTTPS redirect                              │  │
+│  │  - Basic auth on admin services                       │  │
+│  └──┬──────────┬──────────┬──────────┬──────────┬────────┘  │
+│     │          │          │          │          │            │
+│     ▼          ▼          ▼          ▼          ▼            │
+│  ┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌─────────┐    │
+│  │Sandbox│ │Grafana │ │Prometh.│ │Portain.│ │Traefik  │    │
+│  │  API  │ │ :3000  │ │ :9090  │ │ :9000  │ │Dashboard│    │
+│  └──┬───┘ └───┬────┘ └────────┘ └────────┘ └─────────┘    │
+│     │         │                                             │
+│     │         │ queries                                     │
+│     │         ▼                                             │
+│     │    ┌─────────┐    ┌──────────┐                       │
+│     │    │  Loki   │◄───│ Promtail │ (container + host     │
+│     │    │ (logs)  │    │ (agent)  │  log collection)       │
+│     │    └─────────┘    └──────────┘                       │
+│     │                                                       │
+│     │  Creates sandboxes                                    │
+│     ▼                                                       │
+│  ┌───────────────────────────────────────┐                 │
+│  │  Ephemeral Containers                 │                 │
+│  │  - Python 3.11  - Node.js 18         │                 │
+│  │  - Bash 5.2                          │                 │
+│  │  Security: No network, read-only FS, │                 │
+│  │  resource limits, dropped caps        │                 │
+│  └───────────────────────────────────────┘                 │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+## 🌐 Live Services
+
+| Service | URL | Authentication |
+|---------|-----|----------------|
+| Sandbox API | https://api.christosm.dev | None (public) |
+| Grafana | https://grafana.christosm.dev | Grafana login |
+| Prometheus | https://prometheus.christosm.dev | Basic auth |
+| Traefik Dashboard | https://traefik.christosm.dev | Basic auth |
+| Portainer | https://portainer.christosm.dev | Portainer login |
 
 ## 🔐 Security Features
 
@@ -178,8 +195,8 @@ python3 test_client.py
 
 ### Base URL
 
-Local: `http://localhost:8000`  
-Production: `http://YOUR_VPS_IP:8000`
+Local: `http://localhost:8000`
+Production: `https://api.christosm.dev`
 
 ### Endpoints
 
@@ -298,7 +315,7 @@ Platform statistics
 ### JavaScript/React Example
 
 ```javascript
-const API_BASE_URL = 'http://YOUR_VPS_IP:8000';
+const API_BASE_URL = 'https://api.christosm.dev';
 
 async function executeSandbox(code, environment) {
   try {
@@ -341,45 +358,57 @@ executeSandbox('print("Hello!")', 'python')
 
 See `frontend-integration/example.html` for a complete working example.
 
-## 📊 Monitoring and Maintenance
+## 📊 Monitoring and Observability
 
-### View Logs
+The platform runs a full observability stack accessible via Grafana:
 
-```bash
-# On VPS
-cd /opt/zensical-sandbox
-docker-compose logs -f sandbox-api
+| Component | Role | Retention |
+|-----------|------|-----------|
+| **Prometheus** | Metrics collection (Traefik, Sandbox API, Loki) | 15 days |
+| **Loki** | Log aggregation (container + host logs) | 15 days (360h) |
+| **Promtail** | Log collection agent (Docker SD + host syslog/auth) | N/A |
+| **Grafana** | Visualization and dashboards | Persistent |
+
+### Grafana Queries
+
+```
+# Container logs (all services)
+{job="docker-sd"}
+
+# Filter by service name
+{service="sandbox-api"}
+
+# Host syslog
+{job="syslog"}
+
+# SSH and authentication logs
+{job="authlog"}
 ```
 
-### Check Container Status
+### Prometheus Scrape Targets
+
+- `prometheus:9090` - Self-monitoring
+- `traefik:8080` - Reverse proxy metrics
+- `sandbox-api:8000` - Application metrics
+- `loki:3100` - Log aggregation metrics
+
+### Maintenance Commands
 
 ```bash
-docker-compose ps
-```
+# View service logs
+docker compose logs -f sandbox-api
 
-### Restart Services
+# Check all service status
+docker compose ps
 
-```bash
-docker-compose restart
-```
+# Restart a specific service
+docker compose restart grafana
 
-### Clean Up Old Containers
-
-```bash
-# Remove stopped containers
+# Clean up stopped containers and unused images
 docker container prune -f
-
-# Remove unused images
 docker image prune -a -f
-```
 
-### Monitor Resource Usage
-
-```bash
-# Overall system
-htop
-
-# Docker stats
+# Check resource usage
 docker stats
 ```
 
@@ -415,11 +444,20 @@ SUPPORTED_ENVIRONMENTS = {
 }
 ```
 
-### Enabling SSL/TLS
+### SSL/TLS Configuration
 
-1. Uncomment NGINX service in `docker-compose.yml`
-2. Configure SSL certificates (Let's Encrypt recommended)
-3. Update frontend to use `https://` URLs
+TLS is handled by Traefik with Let's Encrypt certificates via Cloudflare DNS challenge:
+
+- **Certificate Resolver**: Let's Encrypt (ACME) with Cloudflare DNS-01 challenge
+- **Cloudflare Proxy**: All subdomains are proxied through Cloudflare (orange cloud)
+- **HTTP Redirect**: All HTTP traffic is automatically redirected to HTTPS
+- **Admin Auth**: Traefik dashboard and Prometheus are protected with basic auth middleware
+
+Required environment variables (see `.env.example`):
+```bash
+CF_DNS_API_TOKEN=<cloudflare-api-token-with-dns-edit>
+TRAEFIK_BASIC_AUTH=<htpasswd-generated-user:hash>
+```
 
 ## 🎓 Learning Outcomes
 
@@ -464,10 +502,11 @@ This project demonstrates:
 - Secret management with Vault
 
 ### Monitoring & Observability
-- Prometheus metrics
-- Grafana dashboards
+- ~~Prometheus metrics~~ ✅ Implemented
+- ~~Grafana dashboards~~ ✅ Implemented
+- ~~Log aggregation~~ ✅ Implemented (Loki + Promtail)
 - Distributed tracing with Jaeger
-- Log aggregation with ELK stack
+- Alertmanager for alert routing
 
 ### Developer Experience
 - WebSocket for real-time output
@@ -513,9 +552,7 @@ MIT License - See LICENSE file for details
 
 ## 📞 Contact
 
-- Portfolio: [Your Portfolio URL]
-- LinkedIn: [Your LinkedIn]
-- Email: [Your Email]
+- Portfolio: [christosm.dev](https://christosm.dev)
 
 ---
 
