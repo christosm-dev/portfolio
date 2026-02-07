@@ -92,8 +92,8 @@ declare -A RENAME_MAP=(
     ["structurizr-SystemContext"]="c4-system-context"
     ["structurizr-Containers"]="c4-containers"
     ["structurizr-Components"]="c4-components"
-    ["structurizr-ContainerDeployment"]="c4-container-deployment"
-    ["structurizr-ResourceMonitoring"]="c4-resource-monitoring"
+    ["structurizr-CodeExecution"]="c4-code-execution"
+    ["structurizr-MonitoringFlow"]="c4-monitoring-flow"
     ["structurizr-DockerDeployment"]="c4-docker-deployment"
     ["structurizr-KubernetesDeployment"]="c4-kubernetes-deployment"
 )

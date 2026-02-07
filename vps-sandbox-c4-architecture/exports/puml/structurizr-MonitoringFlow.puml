@@ -1,0 +1,38 @@
+@startuml
+title <size:24>Dynamic View: VPS Sandbox Platform</size>\n<size:24>Monitoring and observability flow</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("VPSSandboxPlatform_boundary", "VPS Sandbox Platform", $tags="") {
+  Container(VPSSandboxPlatform.SandboxAPI, "Sandbox API", $techn="FastAPI, Python 3.11", $descr="REST API for sandboxed code execution and container management", $tags="", $link="")
+  Container(VPSSandboxPlatform.Prometheus, "Prometheus", $techn="Prometheus v2.50", $descr="Collects and stores time-series metrics from all services", $tags="", $link="")
+  Container(VPSSandboxPlatform.Grafana, "Grafana", $techn="Grafana 10.3", $descr="Unified dashboards for metrics and log visualisation", $tags="", $link="")
+  Container(VPSSandboxPlatform.Loki, "Loki", $techn="Grafana Loki 3.4", $descr="Log aggregation engine with label-based indexing", $tags="", $link="")
+  Container(VPSSandboxPlatform.Promtail, "Promtail", $techn="Grafana Promtail 3.4", $descr="Log collection agent for Docker containers and host logs", $tags="", $link="")
+  Container(VPSSandboxPlatform.Traefik, "Traefik", $techn="Traefik v3", $descr="Reverse proxy with automatic service discovery, SSL termination, and rate limiting", $tags="", $link="")
+}
+
+Person(TechnicalInterviewer, "Technical Interviewer", $descr="Reviews portfolio, architecture decisions, and monitoring dashboards", $tags="", $link="")
+
+Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.SandboxAPI, "1: 1. Scrape /metrics", $techn="HTTP /metrics", $tags="", $link="")
+Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.Traefik, "2: 2. Scrape Traefik metrics", $techn="HTTP :8080/metrics", $tags="", $link="")
+Rel(VPSSandboxPlatform.Promtail, VPSSandboxPlatform.Loki, "3: 3. Push container and host logs", $techn="HTTP /loki/api/v1/push", $tags="", $link="")
+Rel(VPSSandboxPlatform.Grafana, VPSSandboxPlatform.Prometheus, "4: 4. Query metrics via PromQL", $techn="PromQL", $tags="", $link="")
+Rel(VPSSandboxPlatform.Grafana, VPSSandboxPlatform.Loki, "5: 5. Query logs via LogQL", $techn="LogQL", $tags="", $link="")
+Rel(TechnicalInterviewer, VPSSandboxPlatform.Grafana, "6: 6. View unified dashboards", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

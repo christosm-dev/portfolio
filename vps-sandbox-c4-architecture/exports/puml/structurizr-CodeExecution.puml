@@ -1,0 +1,32 @@
+@startuml
+title <size:24>Dynamic View: VPS Sandbox Platform</size>\n<size:24>Code execution flow</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("VPSSandboxPlatform_boundary", "VPS Sandbox Platform", $tags="") {
+  Container(VPSSandboxPlatform.SandboxAPI, "Sandbox API", $techn="FastAPI, Python 3.11", $descr="REST API for sandboxed code execution and container management", $tags="", $link="")
+  Container(VPSSandboxPlatform.Traefik, "Traefik", $techn="Traefik v3", $descr="Reverse proxy with automatic service discovery, SSL termination, and rate limiting", $tags="", $link="")
+}
+
+Person(Developer, "Developer", $descr="Executes code in sandboxed containers via the API", $tags="", $link="")
+
+Rel(Developer, VPSSandboxPlatform.Traefik, "1: 1. POST /execute with code payload", $techn="HTTPS", $tags="", $link="")
+Rel(VPSSandboxPlatform.Traefik, VPSSandboxPlatform.SandboxAPI, "2: 2. Forward request to Sandbox API", $techn="HTTP (api.christosm.dev)", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI, VPSSandboxPlatform.Traefik, "3: 3. Return execution result", $techn="HTTP (api.christosm.dev)", $tags="", $link="")
+Rel(VPSSandboxPlatform.Traefik, Developer, "4: 4. Display output", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

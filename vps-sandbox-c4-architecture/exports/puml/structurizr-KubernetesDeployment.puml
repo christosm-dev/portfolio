@@ -1,5 +1,5 @@
 @startuml
-title <size:24>Deployment View: VPS Sandbox Platform - Kubernetes</size>\n<size:24>Phase 2: Kubernetes-based deployment with namespaces and high availability</size>
+title <size:24>Deployment View: VPS Sandbox Platform - Kubernetes</size>\n<size:24>Planned: Kubernetes-based deployment with namespaces, DaemonSets, and high availability</size>
 
 set separator none
 top to bottom direction
@@ -17,50 +17,59 @@ top to bottom direction
 !include <C4/C4_Deployment>
 
 Deployment_Node(Kubernetes.KubernetesCluster, "Kubernetes Cluster", $type="Kubernetes", $descr="K3s or managed Kubernetes", $tags="", $link="") {
-  Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace, "Backend Namespace", $type="Namespace", $descr="vps-platform-prod", $tags="", $link="") {
-    Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment, "Backend Deployment", $type="Deployment", $descr="3 replicas for high availability", $tags="", $link="") {
-      Container(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, "Backend API", $techn="FastAPI, Python 3.11", $descr="Provides REST API for container management and monitoring", $tags="", $link="")
-    }
-
-    Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet, "PostgreSQL StatefulSet", $type="StatefulSet", $descr="Persistent storage with volume claims", $tags="", $link="") {
-      ContainerDb(Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet.PostgreSQLDatabase_1, "PostgreSQL Database", $techn="PostgreSQL 15", $descr="Stores application data, user information, and configuration", $tags="", $link="")
-    }
-
-    Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment, "Redis Deployment", $type="Deployment", $descr="2 replicas for caching", $tags="", $link="") {
-      ContainerDb(Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment.RedisCache_1, "Redis Cache", $techn="Redis 7", $descr="Caches API responses and session data", $tags="", $link="")
+  Deployment_Node(Kubernetes.KubernetesCluster.PlatformNamespace, "Platform Namespace", $type="Namespace", $descr="vps-platform-prod", $tags="", $link="") {
+    Deployment_Node(Kubernetes.KubernetesCluster.PlatformNamespace.BackendDeployment, "Backend Deployment", $type="Deployment", $descr="3 replicas for high availability", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.PlatformNamespace.BackendDeployment.SandboxAPI_1, "Sandbox API", $techn="FastAPI, Python 3.11", $descr="REST API for sandboxed code execution and container management", $tags="", $link="")
     }
 
   }
 
   Deployment_Node(Kubernetes.KubernetesCluster.IngressNamespace, "Ingress Namespace", $type="Namespace", $descr="vps-platform-ingress", $tags="", $link="") {
-    Deployment_Node(Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController, "NGINX Ingress Controller", $type="Ingress", $descr="Load balancer and routing", $tags="", $link="") {
-      Container(Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController.NGINXReverseProxy_1, "NGINX Reverse Proxy", $techn="NGINX", $descr="Handles SSL termination, load balancing, and rate limiting", $tags="", $link="")
+    Deployment_Node(Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController, "Traefik Ingress Controller", $type="IngressRoute", $descr="TLS termination and routing", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController.Traefik_1, "Traefik", $techn="Traefik v3", $descr="Reverse proxy with automatic service discovery, SSL termination, and rate limiting", $tags="", $link="")
     }
 
   }
 
   Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace, "Monitoring Namespace", $type="Namespace", $descr="vps-platform-monitoring", $tags="", $link="") {
-    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment, "Prometheus Deployment", $type="Deployment", $descr="Metrics collection", $tags="", $link="") {
-      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, "Prometheus", $techn="Prometheus", $descr="Collects and stores metrics from all containers", $tags="", $link="")
+    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack, "Prometheus Stack", $type="Deployment", $descr="Metrics collection and alerting", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, "Prometheus", $techn="Prometheus v2.50", $descr="Collects and stores time-series metrics from all services", $tags="", $link="")
     }
 
-    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaDeployment, "Grafana Deployment", $type="Deployment", $descr="Visualization dashboards", $tags="", $link="") {
-      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaDeployment.Grafana_1, "Grafana", $techn="Grafana", $descr="Visualizes metrics and provides monitoring dashboards", $tags="", $link="")
+    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaStack, "Grafana Stack", $type="Deployment", $descr="Dashboards and visualisation", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaStack.Grafana_1, "Grafana", $techn="Grafana 10.3", $descr="Unified dashboards for metrics and log visualisation", $tags="", $link="")
+    }
+
+    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.LokiStack, "Loki Stack", $type="StatefulSet", $descr="Log aggregation", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.LokiStack.Loki_1, "Loki", $techn="Grafana Loki 3.4", $descr="Log aggregation engine with label-based indexing", $tags="", $link="")
+    }
+
+    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.PromtailDaemonSet, "Promtail DaemonSet", $type="DaemonSet", $descr="Node-level log collection", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.PromtailDaemonSet.Promtail_1, "Promtail", $techn="Grafana Promtail 3.4", $descr="Log collection agent for Docker containers and host logs", $tags="", $link="")
+    }
+
+  }
+
+  Deployment_Node(Kubernetes.KubernetesCluster.ManagementNamespace, "Management Namespace", $type="Namespace", $descr="vps-platform-mgmt", $tags="", $link="") {
+    Deployment_Node(Kubernetes.KubernetesCluster.ManagementNamespace.PortainerDeployment, "Portainer Deployment", $type="Deployment", $descr="Cluster management UI", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.ManagementNamespace.PortainerDeployment.Portainer_1, "Portainer", $techn="Portainer CE 2.11", $descr="Web-based Docker management UI for container and image operations", $tags="", $link="")
     }
 
   }
 
 }
 
-Rel(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet.PostgreSQLDatabase_1, "Reads from and writes to", $techn="PostgreSQL Protocol", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment.RedisCache_1, "Caches data in", $techn="Redis Protocol", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController.NGINXReverseProxy_1, Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, "Forwards requests to", $techn="HTTPS/REST", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, "Scrapes metrics from", $techn="HTTP/Prometheus", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet.PostgreSQLDatabase_1, "Scrapes metrics from", $techn="PostgreSQL Exporter", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment.RedisCache_1, "Scrapes metrics from", $techn="Redis Exporter", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController.NGINXReverseProxy_1, "Scrapes metrics from", $techn="NGINX Exporter", $tags="", $link="")
-Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaDeployment.Grafana_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, "Queries metrics from", $techn="PromQL", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController.Traefik_1, Kubernetes.KubernetesCluster.ManagementNamespace.PortainerDeployment.Portainer_1, "Forwards management requests to", $techn="HTTP (portainer.christosm.dev)", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController.Traefik_1, Kubernetes.KubernetesCluster.PlatformNamespace.BackendDeployment.SandboxAPI_1, "Forwards API requests to", $techn="HTTP (api.christosm.dev)", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, Kubernetes.KubernetesCluster.PlatformNamespace.BackendDeployment.SandboxAPI_1, "Scrapes metrics from", $techn="HTTP /metrics", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.PlatformNamespace.BackendDeployment.SandboxAPI_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController.Traefik_1, "Scrapes metrics from", $techn="HTTP :8080/metrics", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController.Traefik_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, "Forwards metrics UI requests to", $techn="HTTP (prometheus.christosm.dev)", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.IngressNamespace.TraefikIngressController.Traefik_1, Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaStack.Grafana_1, "Forwards dashboard requests to", $techn="HTTP (grafana.christosm.dev)", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaStack.Grafana_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, "Queries metrics from", $techn="PromQL", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusStack.Prometheus_1, Kubernetes.KubernetesCluster.MonitoringNamespace.LokiStack.Loki_1, "Scrapes metrics from", $techn="HTTP :3100/metrics", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaStack.Grafana_1, Kubernetes.KubernetesCluster.MonitoringNamespace.LokiStack.Loki_1, "Queries logs from", $techn="LogQL", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PromtailDaemonSet.Promtail_1, Kubernetes.KubernetesCluster.MonitoringNamespace.LokiStack.Loki_1, "Pushes log streams to", $techn="HTTP /loki/api/v1/push", $tags="", $link="")
 
 SHOW_LEGEND(true)
 hide stereotypes

@@ -15,19 +15,21 @@ top to bottom direction
 !include <C4/C4_Context>
 
 Person(DevOpsEngineer, "DevOps Engineer", $descr="Deploys and manages containerized applications on the platform", $tags="", $link="")
-Person(Developer, "Developer", $descr="Develops and tests applications in the sandbox environment", $tags="", $link="")
-Person(TechnicalInterviewer, "Technical Interviewer", $descr="Reviews portfolio and architecture decisions", $tags="", $link="")
+Person(Developer, "Developer", $descr="Executes code in sandboxed containers via the API", $tags="", $link="")
+Person(TechnicalInterviewer, "Technical Interviewer", $descr="Reviews portfolio, architecture decisions, and monitoring dashboards", $tags="", $link="")
 System(GitHub, "GitHub", $descr="Version control and CI/CD triggers", $tags="", $link="")
 System(DockerHub, "Docker Hub", $descr="Container image registry", $tags="", $link="")
-System(LetsEncrypt, "Let's Encrypt", $descr="SSL/TLS certificate provider", $tags="", $link="")
+System(LetsEncrypt, "Let's Encrypt", $descr="SSL/TLS certificate provider (ACME)", $tags="", $link="")
+System(Cloudflare, "Cloudflare", $descr="DNS management and CDN proxy for *.christosm.dev", $tags="", $link="")
 System(VPSSandboxPlatform, "VPS Sandbox Platform", $descr="Production-grade container platform demonstrating DevOps skills and best practices", $tags="", $link="")
 
 Rel(DevOpsEngineer, VPSSandboxPlatform, "Deploys applications, manages infrastructure via", $techn="", $tags="", $link="")
-Rel(Developer, VPSSandboxPlatform, "Tests applications in production-like environment using", $techn="", $tags="", $link="")
-Rel(TechnicalInterviewer, VPSSandboxPlatform, "Reviews architecture and implementation of", $techn="", $tags="", $link="")
+Rel(Developer, VPSSandboxPlatform, "Executes code in sandbox containers via", $techn="", $tags="", $link="")
+Rel(TechnicalInterviewer, VPSSandboxPlatform, "Reviews architecture and monitoring dashboards of", $techn="", $tags="", $link="")
 Rel(VPSSandboxPlatform, GitHub, "Pulls code and configuration from", $techn="", $tags="", $link="")
 Rel(VPSSandboxPlatform, DockerHub, "Pulls container images from", $techn="", $tags="", $link="")
 Rel(VPSSandboxPlatform, LetsEncrypt, "Obtains SSL/TLS certificates from", $techn="", $tags="", $link="")
+Rel(VPSSandboxPlatform, Cloudflare, "Routes traffic through", $techn="", $tags="", $link="")
 
 SHOW_LEGEND(true)
 hide stereotypes

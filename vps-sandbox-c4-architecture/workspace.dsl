@@ -3,141 +3,132 @@ workspace "VPS Sandbox Platform" "C4 architecture for the VPS Sandbox Platform -
     model {
         # People
         devopsEngineer = person "DevOps Engineer" "Deploys and manages containerized applications on the platform"
-        developer = person "Developer" "Develops and tests applications in the sandbox environment"
-        interviewer = person "Technical Interviewer" "Reviews portfolio and architecture decisions"
+        developer = person "Developer" "Executes code in sandboxed containers via the API"
+        interviewer = person "Technical Interviewer" "Reviews portfolio, architecture decisions, and monitoring dashboards"
 
         # External Systems
         github = softwareSystem "GitHub" "Version control and CI/CD triggers" "External"
         dockerHub = softwareSystem "Docker Hub" "Container image registry" "External"
-        letsEncrypt = softwareSystem "Let's Encrypt" "SSL/TLS certificate provider" "External"
+        letsEncrypt = softwareSystem "Let's Encrypt" "SSL/TLS certificate provider (ACME)" "External"
+        cloudflare = softwareSystem "Cloudflare" "DNS management and CDN proxy for *.christosm.dev" "External"
 
         # VPS Sandbox Platform (Main System)
         vpsPlatform = softwareSystem "VPS Sandbox Platform" "Production-grade container platform demonstrating DevOps skills and best practices" {
 
-            # Web Layer
-            nginx = container "NGINX Reverse Proxy" "Handles SSL termination, load balancing, and rate limiting" "NGINX" "WebServer"
+            # Reverse Proxy / Edge
+            traefik = container "Traefik" "Reverse proxy with automatic service discovery, SSL termination, and rate limiting" "Traefik v3" "WebServer"
 
             # Application Layer
-            backendApi = container "Backend API" "Provides REST API for container management and monitoring" "FastAPI, Python 3.11" "Application" {
-                # API Layer Components
-                containerRoutes = component "Container Management Routes" "Handles HTTP requests for container operations" "FastAPI Router"
-                authRoutes = component "Authentication Routes" "Handles user authentication and token validation" "FastAPI Router"
-                healthRoutes = component "Health Check Routes" "Provides health and readiness endpoints" "FastAPI Router"
+            backendApi = container "Sandbox API" "REST API for sandboxed code execution and container management" "FastAPI, Python 3.11" "Application" {
+                # API Layer
+                executionRoutes = component "Execution Routes" "Handles code execution requests (/execute endpoint)" "FastAPI Router"
+                healthRoutes = component "Health Check Routes" "Provides health and readiness endpoints (/health, /ready)" "FastAPI Router"
+                metricsEndpoint = component "Metrics Endpoint" "Exposes Prometheus metrics at /metrics" "Prometheus Client"
 
-                # Service Layer Components
-                containerService = component "Container Service" "Business logic for container lifecycle management" "Python Service"
-                resourceMonitor = component "Resource Monitor" "Monitors container resource usage (CPU, memory, disk)" "Python Service"
-                securityService = component "Security Service" "Handles authentication, authorization, and audit logging" "Python Service"
+                # Service Layer
+                sandboxManager = component "Sandbox Manager" "Orchestrates ephemeral container lifecycle: create, execute, destroy" "Python Service"
+                securityManager = component "Security Manager" "Enforces resource limits, network isolation, and capability restrictions" "Python Service"
 
-                # Data Access Layer Components
-                containerRepo = component "Container Repository" "Data access for container information" "SQLAlchemy"
-                userRepo = component "User Repository" "Data access for user information" "SQLAlchemy"
-
-                # Infrastructure Components
-                dockerClient = component "Docker Client Wrapper" "Wraps Docker API calls for container operations" "Docker SDK for Python"
-                cacheClient = component "Cache Client" "Handles caching operations" "Redis Client"
-                metricsCollector = component "Metrics Collector" "Exposes metrics for Prometheus" "Prometheus Client"
+                # Infrastructure Layer
+                dockerClient = component "Docker Client" "Wraps Docker Engine API for container operations" "Docker SDK for Python"
             }
 
-            # Data Layer
-            postgres = container "PostgreSQL Database" "Stores application data, user information, and configuration" "PostgreSQL 15" "Database"
-            redis = container "Redis Cache" "Caches API responses and session data" "Redis 7" "Database"
+            # Monitoring Stack
+            prometheus = container "Prometheus" "Collects and stores time-series metrics from all services" "Prometheus v2.50" "Monitoring"
+            grafana = container "Grafana" "Unified dashboards for metrics and log visualisation" "Grafana 10.3" "Monitoring"
+            loki = container "Loki" "Log aggregation engine with label-based indexing" "Grafana Loki 3.4" "Monitoring"
+            promtail = container "Promtail" "Log collection agent for Docker containers and host logs" "Grafana Promtail 3.4" "Monitoring"
 
-            # Monitoring Layer
-            prometheus = container "Prometheus" "Collects and stores metrics from all containers" "Prometheus" "Monitoring"
-            grafana = container "Grafana" "Visualizes metrics and provides monitoring dashboards" "Grafana" "Monitoring"
+            # Container Management
+            portainer = container "Portainer" "Web-based Docker management UI for container and image operations" "Portainer CE 2.11" "Management"
         }
 
-        # Relationships - People to Systems
+        # Relationships - People to System
         devopsEngineer -> vpsPlatform "Deploys applications, manages infrastructure via"
-        developer -> vpsPlatform "Tests applications in production-like environment using"
-        interviewer -> vpsPlatform "Reviews architecture and implementation of"
+        developer -> vpsPlatform "Executes code in sandbox containers via"
+        interviewer -> vpsPlatform "Reviews architecture and monitoring dashboards of"
 
-        # Relationships - System to External Systems
+        # Relationships - System to External
         vpsPlatform -> github "Pulls code and configuration from"
         vpsPlatform -> dockerHub "Pulls container images from"
         vpsPlatform -> letsEncrypt "Obtains SSL/TLS certificates from"
+        vpsPlatform -> cloudflare "Routes traffic through"
 
-        # Relationships - People to Containers (for detailed views)
-        devopsEngineer -> nginx "Accesses via" "HTTPS"
-        developer -> nginx "Accesses via" "HTTPS"
-        interviewer -> grafana "Views metrics and dashboards via" "HTTPS"
+        # Relationships - People to Containers
+        devopsEngineer -> traefik "Manages platform via" "HTTPS"
+        developer -> traefik "Submits code for execution via" "HTTPS"
+        interviewer -> grafana "Views metrics and logs via" "HTTPS"
+        interviewer -> traefik "Browses API documentation via" "HTTPS"
 
-        # Relationships - Container Level
-        nginx -> backendApi "Forwards requests to" "HTTPS/REST"
-        backendApi -> postgres "Reads from and writes to" "PostgreSQL Protocol"
-        backendApi -> redis "Caches data in" "Redis Protocol"
+        # Relationships - Edge Layer
+        traefik -> backendApi "Forwards API requests to" "HTTP (api.christosm.dev)"
+        traefik -> grafana "Forwards dashboard requests to" "HTTP (grafana.christosm.dev)"
+        traefik -> prometheus "Forwards metrics UI requests to" "HTTP (prometheus.christosm.dev)"
+        traefik -> portainer "Forwards management requests to" "HTTP (portainer.christosm.dev)"
+        traefik -> letsEncrypt "Requests certificates via" "ACME / Cloudflare DNS challenge"
+        traefik -> cloudflare "Validates domain ownership via" "DNS-01 challenge"
 
-        prometheus -> backendApi "Scrapes metrics from" "HTTP/Prometheus"
-        prometheus -> postgres "Scrapes metrics from" "PostgreSQL Exporter"
-        prometheus -> redis "Scrapes metrics from" "Redis Exporter"
-        prometheus -> nginx "Scrapes metrics from" "NGINX Exporter"
-
+        # Relationships - Monitoring
+        prometheus -> backendApi "Scrapes metrics from" "HTTP /metrics"
+        prometheus -> traefik "Scrapes metrics from" "HTTP :8080/metrics"
+        prometheus -> loki "Scrapes metrics from" "HTTP :3100/metrics"
         grafana -> prometheus "Queries metrics from" "PromQL"
+        grafana -> loki "Queries logs from" "LogQL"
+        promtail -> loki "Pushes log streams to" "HTTP /loki/api/v1/push"
 
-        # Relationships - Component Level (within Backend API)
-        # API Layer to Service Layer
-        containerRoutes -> containerService "Calls"
-        containerRoutes -> securityService "Validates permissions via"
-        authRoutes -> securityService "Authenticates users via"
-        healthRoutes -> resourceMonitor "Checks system health via"
+        # Relationships - Component Level (within Sandbox API)
+        executionRoutes -> sandboxManager "Delegates execution to"
+        executionRoutes -> securityManager "Validates request limits via"
+        healthRoutes -> dockerClient "Checks Docker connectivity via"
+        sandboxManager -> securityManager "Applies security constraints via"
+        sandboxManager -> dockerClient "Creates and manages ephemeral containers via"
+        metricsEndpoint -> prometheus "Exposes metrics to" "HTTP"
 
-        # Service Layer to Data Access Layer
-        containerService -> containerRepo "Reads/writes container data via"
-        containerService -> dockerClient "Manages Docker containers via"
-        containerService -> cacheClient "Caches container states via"
-        securityService -> userRepo "Reads user credentials via"
-        resourceMonitor -> dockerClient "Monitors container resources via"
-
-        # Data Access Layer to Databases
-        containerRepo -> postgres "Queries" "SQL"
-        userRepo -> postgres "Queries" "SQL"
-        cacheClient -> redis "Reads/writes" "Redis Protocol"
-
-        # Infrastructure Components
-        metricsCollector -> prometheus "Exposes metrics to" "HTTP"
-
-        # Deployment Environments
-
-        # Phase 1: Docker-based deployment
+        # Deployment - Phase 1: Docker (Current)
         live = deploymentEnvironment "Live" {
             deploymentNode "Contabo VPS" "Ubuntu 22.04 LTS, 8GB RAM, 4 vCPU" "Physical Server" {
-                deploymentNode "Docker Engine" "Container runtime" "Docker 24.x" {
-                    containerInstance nginx
+                deploymentNode "Docker Engine" "Container runtime with bridge networking" "Docker 29.x" {
+                    containerInstance traefik
                     containerInstance backendApi
-                    containerInstance postgres
-                    containerInstance redis
                     containerInstance prometheus
                     containerInstance grafana
+                    containerInstance loki
+                    containerInstance promtail
+                    containerInstance portainer
                 }
             }
         }
 
-        # Phase 2: Kubernetes-based deployment
+        # Deployment - Phase 2: Kubernetes (Planned)
         kubernetes = deploymentEnvironment "Kubernetes" {
             deploymentNode "Kubernetes Cluster" "K3s or managed Kubernetes" "Kubernetes" {
-                deploymentNode "Backend Namespace" "vps-platform-prod" "Namespace" {
+                deploymentNode "Platform Namespace" "vps-platform-prod" "Namespace" {
                     deploymentNode "Backend Deployment" "3 replicas for high availability" "Deployment" {
                         containerInstance backendApi
                     }
-                    deploymentNode "PostgreSQL StatefulSet" "Persistent storage with volume claims" "StatefulSet" {
-                        containerInstance postgres
-                    }
-                    deploymentNode "Redis Deployment" "2 replicas for caching" "Deployment" {
-                        containerInstance redis
-                    }
                 }
                 deploymentNode "Ingress Namespace" "vps-platform-ingress" "Namespace" {
-                    deploymentNode "NGINX Ingress Controller" "Load balancer and routing" "Ingress" {
-                        containerInstance nginx
+                    deploymentNode "Traefik Ingress Controller" "TLS termination and routing" "IngressRoute" {
+                        containerInstance traefik
                     }
                 }
                 deploymentNode "Monitoring Namespace" "vps-platform-monitoring" "Namespace" {
-                    deploymentNode "Prometheus Deployment" "Metrics collection" "Deployment" {
+                    deploymentNode "Prometheus Stack" "Metrics collection and alerting" "Deployment" {
                         containerInstance prometheus
                     }
-                    deploymentNode "Grafana Deployment" "Visualization dashboards" "Deployment" {
+                    deploymentNode "Grafana Stack" "Dashboards and visualisation" "Deployment" {
                         containerInstance grafana
+                    }
+                    deploymentNode "Loki Stack" "Log aggregation" "StatefulSet" {
+                        containerInstance loki
+                    }
+                    deploymentNode "Promtail DaemonSet" "Node-level log collection" "DaemonSet" {
+                        containerInstance promtail
+                    }
+                }
+                deploymentNode "Management Namespace" "vps-platform-mgmt" "Namespace" {
+                    deploymentNode "Portainer Deployment" "Cluster management UI" "Deployment" {
+                        containerInstance portainer
                     }
                 }
             }
@@ -156,35 +147,33 @@ workspace "VPS Sandbox Platform" "C4 architecture for the VPS Sandbox Platform -
         container vpsPlatform "Containers" {
             include *
             autoLayout
-            description "Container diagram showing the major runtime components of the VPS Sandbox Platform"
+            description "Container diagram showing the runtime services of the VPS Sandbox Platform"
         }
 
-        # Component View (Backend API)
+        # Component View (Sandbox API)
         component backendApi "Components" {
             include *
             autoLayout
-            description "Component diagram showing the internal structure of the Backend API"
+            description "Component diagram showing the internal structure of the Sandbox API"
         }
 
-        # Dynamic View - Container Deployment
-        dynamic vpsPlatform "ContainerDeployment" "Container deployment flow" {
-            devopsEngineer -> nginx "1. HTTPS request to deploy container"
-            nginx -> backendApi "2. Forward request"
-            backendApi -> redis "3. Check cache"
-            backendApi -> postgres "4. Validate user and permissions"
-            backendApi -> postgres "5. Store container metadata"
-            backendApi -> nginx "6. Return success response"
-            nginx -> devopsEngineer "7. Display deployment status"
+        # Dynamic View - Code Execution Flow
+        dynamic vpsPlatform "CodeExecution" "Code execution flow" {
+            developer -> traefik "1. POST /execute with code payload"
+            traefik -> backendApi "2. Forward request to Sandbox API"
+            backendApi -> traefik "3. Return execution result"
+            traefik -> developer "4. Display output"
             autoLayout
         }
 
-        # Dynamic View - Resource Monitoring
-        dynamic vpsPlatform "ResourceMonitoring" "Resource monitoring flow" {
-            prometheus -> backendApi "1. Scrape metrics"
-            backendApi -> prometheus "2. Expose container metrics"
-            grafana -> prometheus "3. Query metrics"
-            prometheus -> grafana "4. Return time-series data"
-            interviewer -> grafana "5. View dashboard"
+        # Dynamic View - Monitoring Flow
+        dynamic vpsPlatform "MonitoringFlow" "Monitoring and observability flow" {
+            prometheus -> backendApi "1. Scrape /metrics"
+            prometheus -> traefik "2. Scrape Traefik metrics"
+            promtail -> loki "3. Push container and host logs"
+            grafana -> prometheus "4. Query metrics via PromQL"
+            grafana -> loki "5. Query logs via LogQL"
+            interviewer -> grafana "6. View unified dashboards"
             autoLayout
         }
 
@@ -192,14 +181,14 @@ workspace "VPS Sandbox Platform" "C4 architecture for the VPS Sandbox Platform -
         deployment vpsPlatform "Live" "DockerDeployment" {
             include *
             autoLayout
-            description "Phase 1: Docker-based deployment on Contabo VPS"
+            description "Current deployment: Docker containers on Contabo VPS with Traefik edge routing"
         }
 
         # Deployment View - Phase 2 (Kubernetes)
         deployment vpsPlatform "Kubernetes" "KubernetesDeployment" {
             include *
             autoLayout
-            description "Phase 2: Kubernetes-based deployment with namespaces and high availability"
+            description "Planned: Kubernetes-based deployment with namespaces, DaemonSets, and high availability"
         }
 
         styles {
@@ -228,6 +217,10 @@ workspace "VPS Sandbox Platform" "C4 architecture for the VPS Sandbox Platform -
             }
             element "Monitoring" {
                 background #f39c12
+                color #ffffff
+            }
+            element "Management" {
+                background #9b59b6
                 color #ffffff
             }
         }

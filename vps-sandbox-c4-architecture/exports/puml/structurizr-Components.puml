@@ -1,5 +1,5 @@
 @startuml
-title <size:24>Component View: VPS Sandbox Platform - Backend API</size>\n<size:24>Component diagram showing the internal structure of the Backend API</size>
+title <size:24>Component View: VPS Sandbox Platform - Sandbox API</size>\n<size:24>Component diagram showing the internal structure of the Sandbox API</size>
 
 set separator none
 top to bottom direction
@@ -17,40 +17,24 @@ top to bottom direction
 !include <C4/C4_Component>
 
 System_Boundary("VPSSandboxPlatform_boundary", "VPS Sandbox Platform", $tags="") {
-  Container_Boundary("VPSSandboxPlatform.BackendAPI_boundary", "Backend API", $tags="") {
-    Component(VPSSandboxPlatform.BackendAPI.ContainerManagementRoutes, "Container Management Routes", $techn="FastAPI Router", $descr="Handles HTTP requests for container operations", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.AuthenticationRoutes, "Authentication Routes", $techn="FastAPI Router", $descr="Handles user authentication and token validation", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.HealthCheckRoutes, "Health Check Routes", $techn="FastAPI Router", $descr="Provides health and readiness endpoints", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.ContainerService, "Container Service", $techn="Python Service", $descr="Business logic for container lifecycle management", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.ResourceMonitor, "Resource Monitor", $techn="Python Service", $descr="Monitors container resource usage (CPU, memory, disk)", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.SecurityService, "Security Service", $techn="Python Service", $descr="Handles authentication, authorization, and audit logging", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.ContainerRepository, "Container Repository", $techn="SQLAlchemy", $descr="Data access for container information", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.UserRepository, "User Repository", $techn="SQLAlchemy", $descr="Data access for user information", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.DockerClientWrapper, "Docker Client Wrapper", $techn="Docker SDK for Python", $descr="Wraps Docker API calls for container operations", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.CacheClient, "Cache Client", $techn="Redis Client", $descr="Handles caching operations", $tags="", $link="")
-    Component(VPSSandboxPlatform.BackendAPI.MetricsCollector, "Metrics Collector", $techn="Prometheus Client", $descr="Exposes metrics for Prometheus", $tags="", $link="")
+  Container_Boundary("VPSSandboxPlatform.SandboxAPI_boundary", "Sandbox API", $tags="") {
+    Component(VPSSandboxPlatform.SandboxAPI.ExecutionRoutes, "Execution Routes", $techn="FastAPI Router", $descr="Handles code execution requests (/execute endpoint)", $tags="", $link="")
+    Component(VPSSandboxPlatform.SandboxAPI.HealthCheckRoutes, "Health Check Routes", $techn="FastAPI Router", $descr="Provides health and readiness endpoints (/health, /ready)", $tags="", $link="")
+    Component(VPSSandboxPlatform.SandboxAPI.MetricsEndpoint, "Metrics Endpoint", $techn="Prometheus Client", $descr="Exposes Prometheus metrics at /metrics", $tags="", $link="")
+    Component(VPSSandboxPlatform.SandboxAPI.SandboxManager, "Sandbox Manager", $techn="Python Service", $descr="Orchestrates ephemeral container lifecycle: create, execute, destroy", $tags="", $link="")
+    Component(VPSSandboxPlatform.SandboxAPI.SecurityManager, "Security Manager", $techn="Python Service", $descr="Enforces resource limits, network isolation, and capability restrictions", $tags="", $link="")
+    Component(VPSSandboxPlatform.SandboxAPI.DockerClient, "Docker Client", $techn="Docker SDK for Python", $descr="Wraps Docker Engine API for container operations", $tags="", $link="")
   }
 
-  ContainerDb(VPSSandboxPlatform.PostgreSQLDatabase, "PostgreSQL Database", $techn="PostgreSQL 15", $descr="Stores application data, user information, and configuration", $tags="", $link="")
-  ContainerDb(VPSSandboxPlatform.RedisCache, "Redis Cache", $techn="Redis 7", $descr="Caches API responses and session data", $tags="", $link="")
-  Container(VPSSandboxPlatform.Prometheus, "Prometheus", $techn="Prometheus", $descr="Collects and stores metrics from all containers", $tags="", $link="")
+  Container(VPSSandboxPlatform.Prometheus, "Prometheus", $techn="Prometheus v2.50", $descr="Collects and stores time-series metrics from all services", $tags="", $link="")
 }
 
-Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.PostgreSQLDatabase, "Scrapes metrics from", $techn="PostgreSQL Exporter", $tags="", $link="")
-Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.RedisCache, "Scrapes metrics from", $techn="Redis Exporter", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ContainerManagementRoutes, VPSSandboxPlatform.BackendAPI.ContainerService, "Calls", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ContainerManagementRoutes, VPSSandboxPlatform.BackendAPI.SecurityService, "Validates permissions via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.AuthenticationRoutes, VPSSandboxPlatform.BackendAPI.SecurityService, "Authenticates users via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.HealthCheckRoutes, VPSSandboxPlatform.BackendAPI.ResourceMonitor, "Checks system health via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ContainerService, VPSSandboxPlatform.BackendAPI.ContainerRepository, "Reads/writes container data via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ContainerService, VPSSandboxPlatform.BackendAPI.DockerClientWrapper, "Manages Docker containers via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ContainerService, VPSSandboxPlatform.BackendAPI.CacheClient, "Caches container states via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.SecurityService, VPSSandboxPlatform.BackendAPI.UserRepository, "Reads user credentials via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ResourceMonitor, VPSSandboxPlatform.BackendAPI.DockerClientWrapper, "Monitors container resources via", $techn="", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.ContainerRepository, VPSSandboxPlatform.PostgreSQLDatabase, "Queries", $techn="SQL", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.UserRepository, VPSSandboxPlatform.PostgreSQLDatabase, "Queries", $techn="SQL", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.CacheClient, VPSSandboxPlatform.RedisCache, "Reads/writes", $techn="Redis Protocol", $tags="", $link="")
-Rel(VPSSandboxPlatform.BackendAPI.MetricsCollector, VPSSandboxPlatform.Prometheus, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI.ExecutionRoutes, VPSSandboxPlatform.SandboxAPI.SandboxManager, "Delegates execution to", $techn="", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI.ExecutionRoutes, VPSSandboxPlatform.SandboxAPI.SecurityManager, "Validates request limits via", $techn="", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI.HealthCheckRoutes, VPSSandboxPlatform.SandboxAPI.DockerClient, "Checks Docker connectivity via", $techn="", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI.SandboxManager, VPSSandboxPlatform.SandboxAPI.SecurityManager, "Applies security constraints via", $techn="", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI.SandboxManager, VPSSandboxPlatform.SandboxAPI.DockerClient, "Creates and manages ephemeral containers via", $techn="", $tags="", $link="")
+Rel(VPSSandboxPlatform.SandboxAPI.MetricsEndpoint, VPSSandboxPlatform.Prometheus, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
 
 SHOW_LEGEND(true)
 hide stereotypes
