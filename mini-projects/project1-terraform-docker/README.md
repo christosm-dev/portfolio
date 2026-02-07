@@ -289,35 +289,28 @@ After completing this project, you should understand:
 
 ---
 
-## ➡️ Next Steps
+## Future Work
 
-After mastering this project:
+- [ ] Add Terraform variables for container port, image tag, and replica count
+- [ ] Implement remote state backend (S3 or Consul) instead of local state
+- [ ] Add a second container (e.g. Redis) to demonstrate multi-resource dependencies
+- [ ] Create Terraform modules to make the configuration reusable
+- [ ] Add `terraform fmt` and `terraform validate` as pre-commit hooks
 
-1. **Experiment** with the variations suggested above
-2. **Review** the Terraform state file to understand its structure
-3. **Move to Project 2:** Deploy a web app to Minikube with Kubernetes
-4. **Study:** HashiCorp Learn Terraform tutorials for deeper understanding
-
----
-
-## 📝 Notes for Portfolio
-
-When adding this to your portfolio or GitHub:
-- Document what you learned in this README
-- Add screenshots of the nginx welcome page
-- Explain any experiments or customizations you tried
-- Describe how this project relates to real-world infrastructure
+> **Learning path:** After this project, move to [Project 2: Kubernetes](../project2-k8s-python-app/) and the [HashiCorp Learn Terraform tutorials](https://learn.hashicorp.com/collections/terraform/docker-get-started).
 
 ---
 
-## 🔗 Resources
+## Interview Talking Points
+
+- "Used Terraform to provision Docker containers as infrastructure, demonstrating the init/plan/apply/destroy lifecycle"
+- "Managed infrastructure state files and understood the importance of state locking for team workflows"
+- "Applied Infrastructure as Code principles: declarative configuration, version-controlled infrastructure, reproducible environments"
+
+---
+
+## Resources
 
 - [Terraform Docker Provider Docs](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs)
 - [HashiCorp Learn - Get Started with Docker](https://learn.hashicorp.com/collections/terraform/docker-get-started)
 - [Terraform CLI Documentation](https://www.terraform.io/cli)
-
----
-
-**Project Status:** Ready to begin  
-**Estimated Time:** 30-60 minutes  
-**Next Project:** Kubernetes deployment to Minikube

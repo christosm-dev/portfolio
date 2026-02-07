@@ -674,41 +674,31 @@ After completing this project, you should understand:
 
 ---
 
-## ➡️ Next Steps
+## Future Work
 
-After mastering this project:
+- [ ] Refactor playbook into Ansible roles for reusability
+- [ ] Add Ansible Vault for secret management (e.g. SSL certificates)
+- [ ] Implement a multi-stage deployment: staging then production
+- [ ] Add molecule testing for playbook validation
+- [ ] Create a dynamic inventory plugin for Docker containers
+- [ ] Add monitoring checks (e.g. verify nginx response after deployment)
 
-1. **Experiment** with the variations above
-2. **Write custom playbooks** for different scenarios
-3. **Learn Ansible Vault** for managing secrets
-4. **Explore Ansible Galaxy** for pre-built roles
-5. **Move to Project 4:** Combined Terraform + Kubernetes
-6. **Study:** Ansible documentation and best practices
-
----
-
-## 📝 Notes for Portfolio
-
-When adding this to your portfolio or GitHub:
-- Document what you automated
-- Show before/after configurations
-- Explain idempotency benefits
-- Include screenshots of playbook runs
-- Demonstrate understanding of Ansible concepts
+> **Learning path:** After this project, move to [Project 4: Terraform + Kubernetes](../../) and explore [Ansible Galaxy](https://galaxy.ansible.com/) for pre-built roles.
 
 ---
 
-## 🔗 Resources
+## Interview Talking Points
+
+- "Automated configuration of multiple web servers simultaneously using Ansible playbooks with idempotent tasks"
+- "Used Jinja2 templates for dynamic configuration generation, demonstrating configuration-as-code principles"
+- "Demonstrated understanding of Ansible architecture: control node, managed nodes, inventory, and module system"
+
+---
+
+## Resources
 
 - [Ansible Official Documentation](https://docs.ansible.com/)
-- [Ansible Galaxy](https://galaxy.ansible.com/) - Pre-built roles
+- [Ansible Galaxy](https://galaxy.ansible.com/)
 - [Ansible Module Index](https://docs.ansible.com/ansible/latest/collections/index_module.html)
 - [Jinja2 Template Designer](https://jinja.palletsprojects.com/)
 - [Red Hat Ansible Training](https://www.ansible.com/products/training-certification)
-
----
-
-**Project Status:** Ready to begin  
-**Estimated Time:** 1-2 hours  
-**Previous Project:** Kubernetes + Minikube  
-**Next Project:** Terraform + Kubernetes integration

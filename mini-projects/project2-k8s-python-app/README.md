@@ -634,39 +634,30 @@ After completing this project, you should understand:
 
 ---
 
-## ➡️ Next Steps
+## Future Work
 
-After mastering this project:
+- [ ] Add ConfigMaps and Secrets for externalised configuration
+- [ ] Implement Ingress controller for domain-based routing
+- [ ] Add Horizontal Pod Autoscaler based on CPU utilisation
+- [ ] Create a Helm chart to package the deployment
+- [ ] Add NetworkPolicies to restrict inter-pod traffic
+- [ ] Implement a CI/CD pipeline that deploys to Minikube on push
 
-1. **Experiment** with the variations above
-2. **Try the k8s dashboard**: `minikube dashboard`
-3. **Learn about ConfigMaps and Secrets** for configuration management
-4. **Move to Project 3:** Ansible configuration management
-5. **Study:** Official Kubernetes documentation and tutorials
-
----
-
-## 📝 Notes for Portfolio
-
-When adding this to your portfolio or GitHub:
-- Document your learning journey
-- Add screenshots of the running app and k8s dashboard
-- Explain experiments you tried
-- Describe how this relates to real-world k8s usage
-- Show kubectl command proficiency
+> **Learning path:** After this project, move to [Project 3: Ansible](../project3-ansible-docker/) and explore the [Kubernetes official tutorials](https://kubernetes.io/docs/tutorials/).
 
 ---
 
-## 🔗 Resources
+## Interview Talking Points
+
+- "Deployed a multi-replica Python application to Kubernetes with liveness and readiness probes for reliability"
+- "Demonstrated rolling updates with zero downtime and rollback capability"
+- "Configured resource requests and limits to prevent noisy-neighbour issues in a shared cluster"
+
+---
+
+## Resources
 
 - [Kubernetes Official Docs](https://kubernetes.io/docs/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 - [CKA/CKAD Exam Info](https://training.linuxfoundation.org/certification/catalog/)
-
----
-
-**Project Status:** Ready to begin  
-**Estimated Time:** 1-2 hours  
-**Previous Project:** Terraform + Docker  
-**Next Project:** Ansible automation

@@ -487,7 +487,7 @@ This project demonstrates:
 - ✅ Automated provisioning
 - ✅ Scalable system design
 
-## 🔜 Future Enhancements (Phase 2+)
+## Future Work
 
 ### Kubernetes Migration
 - Namespace-based isolation
@@ -514,7 +514,7 @@ This project demonstrates:
 - Package installation support
 - Collaborative features
 
-## 📝 Interview Talking Points
+## Interview Talking Points
 
 ### For Aerospace/Defense Roles
 - "Built a secure, sandboxed execution environment with defense-in-depth security"
@@ -536,24 +536,11 @@ This project demonstrates:
 - "Implemented scalable architecture suitable for cloud-native deployment"
 - "Used IaC for reproducible, version-controlled infrastructure"
 
-## 🤝 Contributing
+## Resources
 
-This is a portfolio project, but feedback and suggestions are welcome! Open an issue or submit a pull request.
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
-## 🔗 Related Projects
-
+- [Traefik Documentation](https://doc.traefik.io/traefik/)
 - [Terraform Docker Provider](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs)
 - [gVisor Container Security](https://gvisor.dev/)
 - [Kubernetes Multi-tenancy](https://kubernetes.io/docs/concepts/security/multi-tenancy/)
-
-## 📞 Contact
-
+- [Loki Documentation](https://grafana.com/docs/loki/latest/)
 - Portfolio: [christosm.dev](https://christosm.dev)
-
----
-
-**Built by Christos** | Demonstrating DevOps, SRE, and Platform Engineering Skills
