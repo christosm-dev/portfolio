@@ -1,0 +1,58 @@
+#!/bin/bash
+# ============================================================================
+# Post-commit Hook: Auto-push christosm.dev Submodule
+# ============================================================================
+# After a commit in the portfolio repo, if the pre-commit sync left
+# uncommitted changes in the christosm.dev submodule, this hook will:
+#   1. Commit the synced docs inside the submodule
+#   2. Push the submodule to its remote
+#   3. Create a follow-up commit in the parent repo with the updated ref
+#   4. Push the parent repo
+#
+# To disable this hook temporarily:
+#   git commit --no-verify
+# ============================================================================
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SUBMODULE="$REPO_ROOT/christosm.dev"
+
+# Skip if christosm.dev isn't a submodule with its own .git
+if [[ ! -d "$SUBMODULE/.git" ]]; then
+    exit 0
+fi
+
+# Check if the submodule has uncommitted changes
+if git -C "$SUBMODULE" diff --quiet && git -C "$SUBMODULE" diff --cached --quiet; then
+    exit 0
+fi
+
+echo ""
+echo "📦 Post-commit: christosm.dev submodule has synced changes"
+
+# Get the parent commit message to use as context
+PARENT_MSG="$(git log -1 --format=%s)"
+
+# Commit inside the submodule
+git -C "$SUBMODULE" add -A
+git -C "$SUBMODULE" commit -m "Sync docs: $PARENT_MSG" --quiet || exit 0
+
+# Push the submodule
+if git -C "$SUBMODULE" push --quiet 2>/dev/null; then
+    echo "✅ christosm.dev submodule pushed"
+else
+    echo "⚠️  christosm.dev push failed (network issue?) - commit saved locally"
+    exit 0
+fi
+
+# Update the submodule ref in the parent repo
+git add christosm.dev
+git commit --quiet --no-verify -m "Update christosm.dev submodule ref"
+
+# Push the parent repo
+if git push --quiet 2>/dev/null; then
+    echo "✅ Portfolio repo pushed with updated submodule ref"
+else
+    echo "⚠️  Portfolio push failed (network issue?) - commit saved locally"
+fi
+
+echo ""

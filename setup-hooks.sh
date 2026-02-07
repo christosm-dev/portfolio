@@ -54,11 +54,17 @@ install_hook_for_root() {
     # Install pre-commit hook
     cp "$PORTFOLIO_ROOT/.git-hooks/pre-commit" "$PORTFOLIO_ROOT/.git/hooks/pre-commit"
     chmod +x "$PORTFOLIO_ROOT/.git/hooks/pre-commit"
+    echo -e "${GREEN}✓${NC} Pre-commit hook installed"
 
-    echo -e "${GREEN}✓${NC} Pre-commit hook installed in portfolio root"
+    # Install post-commit hook
+    cp "$PORTFOLIO_ROOT/.git-hooks/post-commit" "$PORTFOLIO_ROOT/.git/hooks/post-commit"
+    chmod +x "$PORTFOLIO_ROOT/.git/hooks/post-commit"
+    echo -e "${GREEN}✓${NC} Post-commit hook installed"
+
     echo ""
-    echo "   Now, whenever you commit changes to the portfolio, docs will"
-    echo "   automatically sync to christosm.dev/docs/"
+    echo "   Now, whenever you commit changes to the portfolio:"
+    echo "   • Pre-commit: syncs docs to christosm.dev/docs/"
+    echo "   • Post-commit: commits, pushes submodule, and updates ref"
 }
 
 install_hook_for_site() {
