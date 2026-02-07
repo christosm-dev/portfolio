@@ -146,6 +146,7 @@ workspace "VPS Sandbox Platform" "C4 architecture for the VPS Sandbox Platform -
         # Container View
         container vpsPlatform "Containers" {
             include *
+            exclude letsEncrypt cloudflare
             autoLayout
             description "Container diagram showing the runtime services of the VPS Sandbox Platform"
         }

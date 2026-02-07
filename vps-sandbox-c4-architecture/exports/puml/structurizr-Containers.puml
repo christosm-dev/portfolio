@@ -18,8 +18,6 @@ top to bottom direction
 Person(DevOpsEngineer, "DevOps Engineer", $descr="Deploys and manages containerized applications on the platform", $tags="", $link="")
 Person(Developer, "Developer", $descr="Executes code in sandboxed containers via the API", $tags="", $link="")
 Person(TechnicalInterviewer, "Technical Interviewer", $descr="Reviews portfolio, architecture decisions, and monitoring dashboards", $tags="", $link="")
-System(LetsEncrypt, "Let's Encrypt", $descr="SSL/TLS certificate provider (ACME)", $tags="", $link="")
-System(Cloudflare, "Cloudflare", $descr="DNS management and CDN proxy for *.christosm.dev", $tags="", $link="")
 
 System_Boundary("VPSSandboxPlatform_boundary", "VPS Sandbox Platform", $tags="") {
     Container(VPSSandboxPlatform.Traefik, "Traefik", $techn="Traefik v3", $descr="Reverse proxy with automatic service discovery, SSL termination, and rate limiting", $tags="", $link="")
@@ -39,8 +37,6 @@ Rel(VPSSandboxPlatform.Traefik, VPSSandboxPlatform.SandboxAPI, "Forwards API req
 Rel(VPSSandboxPlatform.Traefik, VPSSandboxPlatform.Grafana, "Forwards dashboard requests to", $techn="HTTP (grafana.christosm.dev)", $tags="", $link="")
 Rel(VPSSandboxPlatform.Traefik, VPSSandboxPlatform.Prometheus, "Forwards metrics UI requests to", $techn="HTTP (prometheus.christosm.dev)", $tags="", $link="")
 Rel(VPSSandboxPlatform.Traefik, VPSSandboxPlatform.Portainer, "Forwards management requests to", $techn="HTTP (portainer.christosm.dev)", $tags="", $link="")
-Rel(VPSSandboxPlatform.Traefik, LetsEncrypt, "Requests certificates via", $techn="ACME / Cloudflare DNS challenge", $tags="", $link="")
-Rel(VPSSandboxPlatform.Traefik, Cloudflare, "Validates domain ownership via", $techn="DNS-01 challenge", $tags="", $link="")
 Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.SandboxAPI, "Scrapes metrics from", $techn="HTTP /metrics", $tags="", $link="")
 Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.Traefik, "Scrapes metrics from", $techn="HTTP :8080/metrics", $tags="", $link="")
 Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.Loki, "Scrapes metrics from", $techn="HTTP :3100/metrics", $tags="", $link="")
