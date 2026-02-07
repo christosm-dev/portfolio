@@ -52,6 +52,27 @@ fi
 echo "   Generated $PUML_COUNT .puml files"
 
 # ============================================================================
+# Step 1.5: Fix Container diagram layout (Traefik at top)
+# ============================================================================
+# Structurizr exports Traefik last in the System_Boundary block, which causes
+# PlantUML to place it at the bottom. Move the Traefik Container() line to be
+# first inside the boundary so the layout renders it as the entry point.
+
+CONTAINERS_PUML="$PUML_DIR/structurizr-Containers.puml"
+if [[ -f "$CONTAINERS_PUML" ]]; then
+    echo "📏 Reordering Container diagram: Traefik → top..."
+    # Extract the Traefik line, remove it from its current position, insert after boundary open
+    TRAEFIK_LINE=$(grep 'Container(.*\.Traefik,' "$CONTAINERS_PUML")
+    if [[ -n "$TRAEFIK_LINE" ]]; then
+        # Remove the original Traefik line
+        grep -v 'Container(.*\.Traefik,' "$CONTAINERS_PUML" > "$CONTAINERS_PUML.tmp"
+        # Insert it right after the System_Boundary opening line
+        sed -i "/System_Boundary.*boundary/a\\  ${TRAEFIK_LINE}" "$CONTAINERS_PUML.tmp"
+        mv "$CONTAINERS_PUML.tmp" "$CONTAINERS_PUML"
+    fi
+fi
+
+# ============================================================================
 # Step 2: Render .puml → .svg via PlantUML
 # ============================================================================
 

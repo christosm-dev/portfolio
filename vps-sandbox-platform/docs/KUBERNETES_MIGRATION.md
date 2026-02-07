@@ -707,20 +707,6 @@ This project covers many CKA/CKAD exam topics:
    - NetworkPolicies
    - Service exposure
 
-## Interview Talking Points
-
-### For Platform Engineering Roles
-
-"I built a Kubernetes-based sandbox platform with namespace-based multi-tenancy. Each execution runs in its own namespace with ResourceQuotas limiting CPU and memory, and NetworkPolicies ensuring complete isolation. The backend uses the Kubernetes API to dynamically create and destroy namespaces, demonstrating enterprise-grade orchestration patterns."
-
-### For SRE Roles
-
-"My portfolio includes a self-healing sandbox platform on Kubernetes. It uses readiness probes for zero-downtime deployments, automatically cleans up failed executions, and implements resource limits at multiple levels - Pod, Namespace, and Cluster. I built comprehensive monitoring with metrics on namespace lifecycle, execution success rates, and resource utilization."
-
-### For DevOps Roles
-
-"I automated the entire deployment pipeline from infrastructure provisioning with Terraform to Kubernetes orchestration. The project demonstrates GitOps principles, Infrastructure as Code, and follows the CIS Kubernetes Benchmark for security hardening."
-
 ## Next Steps
 
 1. **Complete Phase 2 Implementation** - Build out the full Kubernetes backend

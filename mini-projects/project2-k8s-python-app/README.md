@@ -647,14 +647,6 @@ After completing this project, you should understand:
 
 ---
 
-## Interview Talking Points
-
-- "Deployed a multi-replica Python application to Kubernetes with liveness and readiness probes for reliability"
-- "Demonstrated rolling updates with zero downtime and rollback capability"
-- "Configured resource requests and limits to prevent noisy-neighbour issues in a shared cluster"
-
----
-
 ## Resources
 
 - [Kubernetes Official Docs](https://kubernetes.io/docs/)

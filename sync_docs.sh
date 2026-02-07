@@ -239,6 +239,23 @@ else
 fi
 
 # ============================================================================
+# Sync C4 Architecture Project
+# ============================================================================
+log_info "Syncing C4 Architecture Project"
+PROJECT_DIR="$PORTFOLIO_ROOT/vps-sandbox-c4-architecture"
+
+if [[ -d "$PROJECT_DIR" ]]; then
+    mkdir -p "$DOCS_DEST/projects/vps-sandbox-c4-architecture"
+
+    # Copy workspace.dsl so relative links from VPS README work
+    if [[ -f "$PROJECT_DIR/workspace.dsl" ]]; then
+        cp "$PROJECT_DIR/workspace.dsl" "$DOCS_DEST/projects/vps-sandbox-c4-architecture/workspace.dsl"
+        log_success "workspace.dsl → projects/vps-sandbox-c4-architecture/workspace.dsl"
+        SYNCED=$((SYNCED + 1))
+    fi
+fi
+
+# ============================================================================
 # Sync C4 Literate Python Project
 # ============================================================================
 log_info "Syncing C4 Literate Python Project"

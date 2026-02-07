@@ -203,16 +203,6 @@ Key architectural decisions will be documented in [`docs/ARCHITECTURE_DECISIONS.
    - Ansible for configuration
    - GitOps for deployment
 
-## 🎓 Interview Talking Points
-
-This C4 architecture documentation provides material for discussing:
-
-1. **System Design**: How to structure a production-grade platform
-2. **Scalability**: Evolution from Docker to Kubernetes
-3. **Security**: Multi-layered security approach
-4. **DevOps Practices**: IaC, GitOps, observability
-5. **Communication**: Using C4 to explain complex systems clearly
-
 ## 📚 Resources
 
 - [C4 Model Official Site](https://c4model.com/)

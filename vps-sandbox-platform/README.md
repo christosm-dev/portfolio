@@ -436,34 +436,6 @@ CF_DNS_API_TOKEN=<cloudflare-api-token-with-dns-edit>
 TRAEFIK_BASIC_AUTH=<htpasswd-generated-user:hash>
 ```
 
-## 🎓 Learning Outcomes
-
-This project demonstrates:
-
-### DevOps Skills
-- ✅ Container orchestration with Docker Compose
-- ✅ Infrastructure as Code with Terraform
-- ✅ CI/CD pipeline concepts (automated deployment)
-- ✅ Security hardening and best practices
-
-### SRE Skills
-- ✅ Service reliability patterns (health checks, timeouts)
-- ✅ Resource management and limits
-- ✅ Monitoring and observability (logging, metrics)
-- ✅ Incident prevention (rate limiting, input validation)
-
-### Platform Engineering Skills
-- ✅ Building developer-facing APIs
-- ✅ Multi-tenancy and isolation
-- ✅ Self-service infrastructure
-- ✅ Production-grade architecture
-
-### Cloud Engineering Skills
-- ✅ VPS/cloud server management
-- ✅ Network security configuration
-- ✅ Automated provisioning
-- ✅ Scalable system design
-
 ## Future Work
 
 ### Kubernetes Migration
@@ -490,28 +462,6 @@ This project demonstrates:
 - Multi-file execution support
 - Package installation support
 - Collaborative features
-
-## Interview Talking Points
-
-### For Aerospace/Defense Roles
-- "Built a secure, sandboxed execution environment with defense-in-depth security"
-- "Implemented network isolation, capability dropping, and resource constraints"
-- "Demonstrated security-conscious development practices suitable for cleared environments"
-
-### For Platform Engineering Roles
-- "Created a multi-tenant developer platform with API-first design"
-- "Implemented self-service infrastructure for code execution"
-- "Built production-grade isolation with Docker and resource management"
-
-### For DevOps/SRE Roles
-- "Automated infrastructure provisioning with Terraform"
-- "Implemented comprehensive monitoring, logging, and health checks"
-- "Designed for reliability with timeouts, rate limiting, and graceful degradation"
-
-### For Cloud Engineering Roles
-- "Deployed containerized applications to cloud infrastructure"
-- "Implemented scalable architecture suitable for cloud-native deployment"
-- "Used IaC for reproducible, version-controlled infrastructure"
 
 ## Resources
 

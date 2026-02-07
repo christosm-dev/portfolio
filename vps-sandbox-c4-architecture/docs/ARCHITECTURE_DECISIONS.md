@@ -44,13 +44,6 @@ Build the platform in two phases:
 - ⚠️ Migration work needs to be documented separately
 - ⚠️ Some refactoring needed between phases
 
-### Interview Talking Points
-
-- Experience with both Docker and Kubernetes
-- Understanding of when to use each technology
-- Knowledge of migration strategies
-- Ability to balance complexity with value delivery
-
 ---
 
 ## ADR-002: FastAPI for Backend
@@ -81,13 +74,6 @@ Use FastAPI (Python) as the backend framework for the container management API.
 **Negative**:
 - ⚠️ Less mature than Flask/Django (but stable enough)
 - ⚠️ Smaller ecosystem than older frameworks
-
-### Interview Talking Points
-
-- Modern Python development practices
-- API design and documentation
-- Async programming patterns
-- Type safety and validation
 
 ---
 
@@ -125,13 +111,6 @@ Implement defense-in-depth security from the start, including:
 - ⚠️ Increases initial complexity
 - ⚠️ More configuration and maintenance
 
-### Interview Talking Points
-
-- Security best practices
-- Defense-in-depth strategies
-- Compliance considerations
-- SC clearance suitability
-
 ---
 
 ## ADR-004: Infrastructure as Code
@@ -165,13 +144,6 @@ Use Infrastructure as Code tools for all provisioning and configuration:
 **Negative**:
 - ⚠️ Learning curve for multiple tools
 - ⚠️ State management complexity (Terraform)
-
-### Interview Talking Points
-
-- IaC best practices
-- Tool selection and comparison
-- State management strategies
-- GitOps workflows
 
 ---
 
@@ -207,13 +179,6 @@ Include comprehensive monitoring and logging from the start:
 - ⚠️ Additional resource requirements
 - ⚠️ More complexity to manage
 
-### Interview Talking Points
-
-- SRE principles (SLIs, SLOs, SLAs)
-- Monitoring strategies
-- Incident response
-- Performance optimization
-
 ---
 
 ## ADR-006: PostgreSQL for Data Persistence
@@ -243,13 +208,6 @@ Use PostgreSQL as the primary database for storing application data and configur
 **Negative**:
 - ⚠️ More complex than simpler databases (SQLite)
 - ⚠️ Requires proper backup/recovery strategy
-
-### Interview Talking Points
-
-- Database design and normalization
-- SQL query optimization
-- Backup and recovery strategies
-- High availability patterns
 
 ---
 
@@ -282,13 +240,6 @@ Use Redis for caching frequently accessed data and session management.
 - ⚠️ Cache invalidation complexity
 - ⚠️ Data persistence considerations
 
-### Interview Talking Points
-
-- Caching strategies
-- Cache invalidation patterns
-- Performance optimization
-- Session management
-
 ---
 
 ## Template for New ADRs
@@ -316,11 +267,6 @@ Use Redis for caching frequently accessed data and session management.
 **Negative**:
 - ⚠️ [Trade-off 1]
 - ⚠️ [Trade-off 2]
-
-### Interview Talking Points
-
-- [Topic 1]
-- [Topic 2]
 ```
 
 ---

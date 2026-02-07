@@ -325,20 +325,6 @@ Application Containers
 
 ---
 
-## 🎯 Interview Talking Points
-
-This deployment documentation supports discussions about:
-
-1. **Progressive Deployment**: Docker → Kubernetes migration
-2. **Security Layers**: Defense-in-depth implementation
-3. **High Availability**: Redundancy and failover strategies
-4. **CI/CD**: Automated deployment pipelines
-5. **Environment Management**: Dev/Staging/Prod strategy
-6. **Monitoring**: Comprehensive observability
-7. **Network Design**: Security zones and segmentation
-
----
-
 **Last Updated**: February 4, 2026
 **Owner**: Christos Michaelides
 **Project**: VPS Sandbox Platform C4 Architecture

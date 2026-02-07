@@ -687,14 +687,6 @@ After completing this project, you should understand:
 
 ---
 
-## Interview Talking Points
-
-- "Automated configuration of multiple web servers simultaneously using Ansible playbooks with idempotent tasks"
-- "Used Jinja2 templates for dynamic configuration generation, demonstrating configuration-as-code principles"
-- "Demonstrated understanding of Ansible architecture: control node, managed nodes, inventory, and module system"
-
----
-
 ## Resources
 
 - [Ansible Official Documentation](https://docs.ansible.com/)

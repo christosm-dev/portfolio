@@ -301,14 +301,6 @@ After completing this project, you should understand:
 
 ---
 
-## Interview Talking Points
-
-- "Used Terraform to provision Docker containers as infrastructure, demonstrating the init/plan/apply/destroy lifecycle"
-- "Managed infrastructure state files and understood the importance of state locking for team workflows"
-- "Applied Infrastructure as Code principles: declarative configuration, version-controlled infrastructure, reproducible environments"
-
----
-
 ## Resources
 
 - [Terraform Docker Provider Docs](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs)
