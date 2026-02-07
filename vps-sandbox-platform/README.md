@@ -1,4 +1,4 @@
-# Zensical Sandbox Platform
+# VPS Demo Sandbox Platform
 
 A secure, production-grade sandboxed code execution platform for portfolio demonstrations. This project showcases DevOps, SRE, and Platform Engineering skills through real-world infrastructure automation, containerization, and security practices.
 
