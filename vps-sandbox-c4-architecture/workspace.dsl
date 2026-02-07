@@ -157,26 +157,6 @@ workspace "VPS Sandbox Platform" "C4 architecture for the VPS Sandbox Platform -
             description "Component diagram showing the internal structure of the Sandbox API"
         }
 
-        # Dynamic View - Code Execution Flow
-        dynamic vpsPlatform "CodeExecution" "Code execution flow" {
-            developer -> traefik "1. POST /execute with code payload"
-            traefik -> backendApi "2. Forward request to Sandbox API"
-            backendApi -> traefik "3. Return execution result"
-            traefik -> developer "4. Display output"
-            autoLayout
-        }
-
-        # Dynamic View - Monitoring Flow
-        dynamic vpsPlatform "MonitoringFlow" "Monitoring and observability flow" {
-            prometheus -> backendApi "1. Scrape /metrics"
-            prometheus -> traefik "2. Scrape Traefik metrics"
-            promtail -> loki "3. Push container and host logs"
-            grafana -> prometheus "4. Query metrics via PromQL"
-            grafana -> loki "5. Query logs via LogQL"
-            interviewer -> grafana "6. View unified dashboards"
-            autoLayout
-        }
-
         # Deployment View - Phase 1 (Docker)
         deployment vpsPlatform "Live" "DockerDeployment" {
             include *

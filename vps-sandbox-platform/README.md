@@ -24,10 +24,6 @@ This platform enables portfolio visitors to execute code examples in isolated, s
 
 ![Container diagram](images/c4-containers.svg)
 
-### Code Execution Flow
-
-![Code Execution flow](images/c4-code-execution.svg)
-
 ### Docker Deployment (Current)
 
 ![Docker Deployment diagram](images/c4-docker-deployment.svg)
