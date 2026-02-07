@@ -206,6 +206,14 @@ if [[ -d "$PROJECT_DIR" ]]; then
             "Roadmap"
     fi
 
+    # Sync images directory (C4 diagrams)
+    if [[ -d "$PROJECT_DIR/images" ]]; then
+        mkdir -p "$DOCS_DEST/projects/vps-sandbox-platform/images"
+        cp "$PROJECT_DIR/images/"*.svg "$DOCS_DEST/projects/vps-sandbox-platform/images/" 2>/dev/null
+        img_count=$(ls "$DOCS_DEST/projects/vps-sandbox-platform/images/"*.svg 2>/dev/null | wc -l)
+        log_success "Copied $img_count SVG images to wiki"
+    fi
+
     # Sync docs subdirectory
     if [[ -d "$PROJECT_DIR/docs" ]]; then
         [[ -f "$PROJECT_DIR/docs/DEPLOYMENT.md" ]] && \

@@ -1,0 +1,37 @@
+@startuml
+title <size:24>Dynamic View: VPS Sandbox Platform</size>\n<size:24>Container deployment flow</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+System_Boundary("VPSSandboxPlatform_boundary", "VPS Sandbox Platform", $tags="") {
+  ContainerDb(VPSSandboxPlatform.PostgreSQLDatabase, "PostgreSQL Database", $techn="PostgreSQL 15", $descr="Stores application data, user information, and configuration", $tags="", $link="")
+  ContainerDb(VPSSandboxPlatform.RedisCache, "Redis Cache", $techn="Redis 7", $descr="Caches API responses and session data", $tags="", $link="")
+  Container(VPSSandboxPlatform.NGINXReverseProxy, "NGINX Reverse Proxy", $techn="NGINX", $descr="Handles SSL termination, load balancing, and rate limiting", $tags="", $link="")
+  Container(VPSSandboxPlatform.BackendAPI, "Backend API", $techn="FastAPI, Python 3.11", $descr="Provides REST API for container management and monitoring", $tags="", $link="")
+}
+
+Person(DevOpsEngineer, "DevOps Engineer", $descr="Deploys and manages containerized applications on the platform", $tags="", $link="")
+
+Rel(DevOpsEngineer, VPSSandboxPlatform.NGINXReverseProxy, "1: 1. HTTPS request to deploy container", $techn="HTTPS", $tags="", $link="")
+Rel(VPSSandboxPlatform.NGINXReverseProxy, VPSSandboxPlatform.BackendAPI, "2: 2. Forward request", $techn="HTTPS/REST", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.RedisCache, "3: 3. Check cache", $techn="Redis Protocol", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.PostgreSQLDatabase, "4: 4. Validate user and permissions", $techn="PostgreSQL Protocol", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.PostgreSQLDatabase, "5: 5. Store container metadata", $techn="PostgreSQL Protocol", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.NGINXReverseProxy, "6: 6. Return success response", $techn="HTTPS/REST", $tags="", $link="")
+Rel(VPSSandboxPlatform.NGINXReverseProxy, DevOpsEngineer, "7: 7. Display deployment status", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

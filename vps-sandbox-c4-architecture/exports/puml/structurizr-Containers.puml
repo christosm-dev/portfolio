@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Container View: VPS Sandbox Platform</size>\n<size:24>Container diagram showing the major runtime components of the VPS Sandbox Platform</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(DevOpsEngineer, "DevOps Engineer", $descr="Deploys and manages containerized applications on the platform", $tags="", $link="")
+Person(Developer, "Developer", $descr="Develops and tests applications in the sandbox environment", $tags="", $link="")
+Person(TechnicalInterviewer, "Technical Interviewer", $descr="Reviews portfolio and architecture decisions", $tags="", $link="")
+
+System_Boundary("VPSSandboxPlatform_boundary", "VPS Sandbox Platform", $tags="") {
+  ContainerDb(VPSSandboxPlatform.PostgreSQLDatabase, "PostgreSQL Database", $techn="PostgreSQL 15", $descr="Stores application data, user information, and configuration", $tags="", $link="")
+  ContainerDb(VPSSandboxPlatform.RedisCache, "Redis Cache", $techn="Redis 7", $descr="Caches API responses and session data", $tags="", $link="")
+  Container(VPSSandboxPlatform.Prometheus, "Prometheus", $techn="Prometheus", $descr="Collects and stores metrics from all containers", $tags="", $link="")
+  Container(VPSSandboxPlatform.Grafana, "Grafana", $techn="Grafana", $descr="Visualizes metrics and provides monitoring dashboards", $tags="", $link="")
+  Container(VPSSandboxPlatform.NGINXReverseProxy, "NGINX Reverse Proxy", $techn="NGINX", $descr="Handles SSL termination, load balancing, and rate limiting", $tags="", $link="")
+  Container(VPSSandboxPlatform.BackendAPI, "Backend API", $techn="FastAPI, Python 3.11", $descr="Provides REST API for container management and monitoring", $tags="", $link="")
+}
+
+Rel(DevOpsEngineer, VPSSandboxPlatform.NGINXReverseProxy, "Accesses via", $techn="HTTPS", $tags="", $link="")
+Rel(Developer, VPSSandboxPlatform.NGINXReverseProxy, "Accesses via", $techn="HTTPS", $tags="", $link="")
+Rel(TechnicalInterviewer, VPSSandboxPlatform.Grafana, "Views metrics and dashboards via", $techn="HTTPS", $tags="", $link="")
+Rel(VPSSandboxPlatform.NGINXReverseProxy, VPSSandboxPlatform.BackendAPI, "Forwards requests to", $techn="HTTPS/REST", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.PostgreSQLDatabase, "Reads from and writes to", $techn="PostgreSQL Protocol", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.RedisCache, "Caches data in", $techn="Redis Protocol", $tags="", $link="")
+Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.BackendAPI, "Scrapes metrics from", $techn="HTTP/Prometheus", $tags="", $link="")
+Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.PostgreSQLDatabase, "Scrapes metrics from", $techn="PostgreSQL Exporter", $tags="", $link="")
+Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.RedisCache, "Scrapes metrics from", $techn="Redis Exporter", $tags="", $link="")
+Rel(VPSSandboxPlatform.Prometheus, VPSSandboxPlatform.NGINXReverseProxy, "Scrapes metrics from", $techn="NGINX Exporter", $tags="", $link="")
+Rel(VPSSandboxPlatform.Grafana, VPSSandboxPlatform.Prometheus, "Queries metrics from", $techn="PromQL", $tags="", $link="")
+Rel(VPSSandboxPlatform.BackendAPI, VPSSandboxPlatform.Prometheus, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

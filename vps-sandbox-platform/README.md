@@ -14,46 +14,23 @@ This platform enables portfolio visitors to execute code examples in isolated, s
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                       Internet                              │
-│         *.christosm.dev (Cloudflare Proxied)                │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTPS (port 443)
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Contabo VPS                              │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  Traefik (Reverse Proxy + Let's Encrypt TLS)          │  │
-│  │  - Cloudflare DNS Challenge for certificates          │  │
-│  │  - HTTP → HTTPS redirect                              │  │
-│  │  - Basic auth on admin services                       │  │
-│  └──┬──────────┬──────────┬──────────┬──────────┬────────┘  │
-│     │          │          │          │          │            │
-│     ▼          ▼          ▼          ▼          ▼            │
-│  ┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌─────────┐    │
-│  │Sandbox│ │Grafana │ │Prometh.│ │Portain.│ │Traefik  │    │
-│  │  API  │ │ :3000  │ │ :9090  │ │ :9000  │ │Dashboard│    │
-│  └──┬───┘ └───┬────┘ └────────┘ └────────┘ └─────────┘    │
-│     │         │                                             │
-│     │         │ queries                                     │
-│     │         ▼                                             │
-│     │    ┌─────────┐    ┌──────────┐                       │
-│     │    │  Loki   │◄───│ Promtail │ (container + host     │
-│     │    │ (logs)  │    │ (agent)  │  log collection)       │
-│     │    └─────────┘    └──────────┘                       │
-│     │                                                       │
-│     │  Creates sandboxes                                    │
-│     ▼                                                       │
-│  ┌───────────────────────────────────────┐                 │
-│  │  Ephemeral Containers                 │                 │
-│  │  - Python 3.11  - Node.js 18         │                 │
-│  │  - Bash 5.2                          │                 │
-│  │  Security: No network, read-only FS, │                 │
-│  │  resource limits, dropped caps        │                 │
-│  └───────────────────────────────────────┘                 │
-└─────────────────────────────────────────────────────────────┘
-```
+> C4 diagrams generated from [workspace.dsl](../vps-sandbox-c4-architecture/workspace.dsl) using the Structurizr DSL.
+
+### System Context
+
+![System Context diagram](images/c4-system-context.svg)
+
+### Container Diagram
+
+![Container diagram](images/c4-containers.svg)
+
+### Docker Deployment (Current)
+
+![Docker Deployment diagram](images/c4-docker-deployment.svg)
+
+### Component Detail (Backend API)
+
+![Component diagram](images/c4-components.svg)
 
 ## 🌐 Live Services
 

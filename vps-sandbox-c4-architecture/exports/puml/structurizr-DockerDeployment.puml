@@ -1,0 +1,43 @@
+@startuml
+title <size:24>Deployment View: VPS Sandbox Platform - Live</size>\n<size:24>Phase 1: Docker-based deployment on Contabo VPS</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Deployment>
+
+Deployment_Node(Live.ContaboVPS, "Contabo VPS", $type="Physical Server", $descr="Ubuntu 22.04 LTS, 8GB RAM, 4 vCPU", $tags="", $link="") {
+  Deployment_Node(Live.ContaboVPS.DockerEngine, "Docker Engine", $type="Docker 24.x", $descr="Container runtime", $tags="", $link="") {
+    Container(Live.ContaboVPS.DockerEngine.NGINXReverseProxy_1, "NGINX Reverse Proxy", $techn="NGINX", $descr="Handles SSL termination, load balancing, and rate limiting", $tags="", $link="")
+    Container(Live.ContaboVPS.DockerEngine.BackendAPI_1, "Backend API", $techn="FastAPI, Python 3.11", $descr="Provides REST API for container management and monitoring", $tags="", $link="")
+    ContainerDb(Live.ContaboVPS.DockerEngine.PostgreSQLDatabase_1, "PostgreSQL Database", $techn="PostgreSQL 15", $descr="Stores application data, user information, and configuration", $tags="", $link="")
+    ContainerDb(Live.ContaboVPS.DockerEngine.RedisCache_1, "Redis Cache", $techn="Redis 7", $descr="Caches API responses and session data", $tags="", $link="")
+    Container(Live.ContaboVPS.DockerEngine.Prometheus_1, "Prometheus", $techn="Prometheus", $descr="Collects and stores metrics from all containers", $tags="", $link="")
+    Container(Live.ContaboVPS.DockerEngine.Grafana_1, "Grafana", $techn="Grafana", $descr="Visualizes metrics and provides monitoring dashboards", $tags="", $link="")
+  }
+
+}
+
+Rel(Live.ContaboVPS.DockerEngine.NGINXReverseProxy_1, Live.ContaboVPS.DockerEngine.BackendAPI_1, "Forwards requests to", $techn="HTTPS/REST", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.BackendAPI_1, Live.ContaboVPS.DockerEngine.PostgreSQLDatabase_1, "Reads from and writes to", $techn="PostgreSQL Protocol", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.BackendAPI_1, Live.ContaboVPS.DockerEngine.RedisCache_1, "Caches data in", $techn="Redis Protocol", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.Prometheus_1, Live.ContaboVPS.DockerEngine.NGINXReverseProxy_1, "Scrapes metrics from", $techn="NGINX Exporter", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.Prometheus_1, Live.ContaboVPS.DockerEngine.BackendAPI_1, "Scrapes metrics from", $techn="HTTP/Prometheus", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.BackendAPI_1, Live.ContaboVPS.DockerEngine.Prometheus_1, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.Prometheus_1, Live.ContaboVPS.DockerEngine.PostgreSQLDatabase_1, "Scrapes metrics from", $techn="PostgreSQL Exporter", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.Prometheus_1, Live.ContaboVPS.DockerEngine.RedisCache_1, "Scrapes metrics from", $techn="Redis Exporter", $tags="", $link="")
+Rel(Live.ContaboVPS.DockerEngine.Grafana_1, Live.ContaboVPS.DockerEngine.Prometheus_1, "Queries metrics from", $techn="PromQL", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

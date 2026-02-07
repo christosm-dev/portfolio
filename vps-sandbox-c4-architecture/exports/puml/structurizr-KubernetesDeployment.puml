@@ -1,0 +1,67 @@
+@startuml
+title <size:24>Deployment View: VPS Sandbox Platform - Kubernetes</size>\n<size:24>Phase 2: Kubernetes-based deployment with namespaces and high availability</size>
+
+set separator none
+top to bottom direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Deployment>
+
+Deployment_Node(Kubernetes.KubernetesCluster, "Kubernetes Cluster", $type="Kubernetes", $descr="K3s or managed Kubernetes", $tags="", $link="") {
+  Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace, "Backend Namespace", $type="Namespace", $descr="vps-platform-prod", $tags="", $link="") {
+    Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment, "Backend Deployment", $type="Deployment", $descr="3 replicas for high availability", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, "Backend API", $techn="FastAPI, Python 3.11", $descr="Provides REST API for container management and monitoring", $tags="", $link="")
+    }
+
+    Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet, "PostgreSQL StatefulSet", $type="StatefulSet", $descr="Persistent storage with volume claims", $tags="", $link="") {
+      ContainerDb(Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet.PostgreSQLDatabase_1, "PostgreSQL Database", $techn="PostgreSQL 15", $descr="Stores application data, user information, and configuration", $tags="", $link="")
+    }
+
+    Deployment_Node(Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment, "Redis Deployment", $type="Deployment", $descr="2 replicas for caching", $tags="", $link="") {
+      ContainerDb(Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment.RedisCache_1, "Redis Cache", $techn="Redis 7", $descr="Caches API responses and session data", $tags="", $link="")
+    }
+
+  }
+
+  Deployment_Node(Kubernetes.KubernetesCluster.IngressNamespace, "Ingress Namespace", $type="Namespace", $descr="vps-platform-ingress", $tags="", $link="") {
+    Deployment_Node(Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController, "NGINX Ingress Controller", $type="Ingress", $descr="Load balancer and routing", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController.NGINXReverseProxy_1, "NGINX Reverse Proxy", $techn="NGINX", $descr="Handles SSL termination, load balancing, and rate limiting", $tags="", $link="")
+    }
+
+  }
+
+  Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace, "Monitoring Namespace", $type="Namespace", $descr="vps-platform-monitoring", $tags="", $link="") {
+    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment, "Prometheus Deployment", $type="Deployment", $descr="Metrics collection", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, "Prometheus", $techn="Prometheus", $descr="Collects and stores metrics from all containers", $tags="", $link="")
+    }
+
+    Deployment_Node(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaDeployment, "Grafana Deployment", $type="Deployment", $descr="Visualization dashboards", $tags="", $link="") {
+      Container(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaDeployment.Grafana_1, "Grafana", $techn="Grafana", $descr="Visualizes metrics and provides monitoring dashboards", $tags="", $link="")
+    }
+
+  }
+
+}
+
+Rel(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet.PostgreSQLDatabase_1, "Reads from and writes to", $techn="PostgreSQL Protocol", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment.RedisCache_1, "Caches data in", $techn="Redis Protocol", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController.NGINXReverseProxy_1, Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, "Forwards requests to", $techn="HTTPS/REST", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, "Scrapes metrics from", $techn="HTTP/Prometheus", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.BackendNamespace.BackendDeployment.BackendAPI_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, "Exposes metrics to", $techn="HTTP", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.BackendNamespace.PostgreSQLStatefulSet.PostgreSQLDatabase_1, "Scrapes metrics from", $techn="PostgreSQL Exporter", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.BackendNamespace.RedisDeployment.RedisCache_1, "Scrapes metrics from", $techn="Redis Exporter", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, Kubernetes.KubernetesCluster.IngressNamespace.NGINXIngressController.NGINXReverseProxy_1, "Scrapes metrics from", $techn="NGINX Exporter", $tags="", $link="")
+Rel(Kubernetes.KubernetesCluster.MonitoringNamespace.GrafanaDeployment.Grafana_1, Kubernetes.KubernetesCluster.MonitoringNamespace.PrometheusDeployment.Prometheus_1, "Queries metrics from", $techn="PromQL", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml
