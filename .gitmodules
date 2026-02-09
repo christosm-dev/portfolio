@@ -1,6 +1,6 @@
 [submodule "christosm.dev"]
 	path = christosm.dev
-	url = https://github.com/ChristosDev75/christosm.dev
+	url = https://github.com/christosm-dev/christosm.dev
 [submodule "c4-literate-python"]
 	path = c4-literate-python
-	url = https://github.com/ChristosDev75/c4-literate-python.git
+	url = https://github.com/christosm-dev/c4-literate-python.git

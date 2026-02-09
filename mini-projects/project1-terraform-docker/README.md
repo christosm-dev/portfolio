@@ -1,6 +1,6 @@
 # Project 1: Terraform + Docker - Provision NGINX Container
 
-> Learn Terraform fundamentals by provisioning Docker containers locally. **[View source on GitHub](https://github.com/ChristosDev75/portfolio/tree/main/mini-projects/project1-terraform-docker)**
+> Learn Terraform fundamentals by provisioning Docker containers locally. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/mini-projects/project1-terraform-docker)**
 
 ## Project Overview
 

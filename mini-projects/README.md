@@ -1,6 +1,6 @@
 # Infrastructure as Code & DevOps Mini-Projects
 
-> Foundational projects demonstrating Terraform, Kubernetes, and Ansible skills. **[View source on GitHub](https://github.com/ChristosDev75/portfolio/tree/main/mini-projects)**
+> Foundational projects demonstrating Terraform, Kubernetes, and Ansible skills. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/mini-projects)**
 
 ## Project Overview
 

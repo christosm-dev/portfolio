@@ -1,6 +1,6 @@
 # Project 2: Kubernetes - Deploy Python Flask App to Minikube
 
-> Deploy a containerised Python application to a local Kubernetes cluster. **[View source on GitHub](https://github.com/ChristosDev75/portfolio/tree/main/mini-projects/project2-k8s-python-app)**
+> Deploy a containerised Python application to a local Kubernetes cluster. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/mini-projects/project2-k8s-python-app)**
 
 ## Project Overview
 

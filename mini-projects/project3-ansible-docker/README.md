@@ -1,6 +1,6 @@
 # Project 3: Ansible - Configure Docker Containers
 
-> Automate multi-container configuration management with Ansible. **[View source on GitHub](https://github.com/ChristosDev75/portfolio/tree/main/mini-projects/project3-ansible-docker)**
+> Automate multi-container configuration management with Ansible. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/mini-projects/project3-ansible-docker)**
 
 ## Project Overview
 
