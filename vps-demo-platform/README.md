@@ -1,6 +1,6 @@
 # VPS Demo Platform
 
-> A secure, production-grade sandboxed code execution platform. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/vps-sandbox-platform)**
+> A secure, production-grade sandboxed code execution platform. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/vps-demo-platform)**
 
 ## Project Overview
 
@@ -128,7 +128,7 @@ Local: `http://localhost:8000` | Production: `https://api.christosm.dev`
 ## Codebase Overview
 
 ```
-vps-sandbox-platform/
+vps-demo-platform/
 ├── backend/
 │   ├── main.py              # FastAPI application: routes, sandbox manager, security
 │   ├── Dockerfile           # Python 3.11 container image

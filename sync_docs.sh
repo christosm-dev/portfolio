@@ -181,36 +181,36 @@ fi
 # Sync VPS Demo Platform
 # ============================================================================
 log_info "Syncing VPS Demo Platform"
-PROJECT_DIR="$PORTFOLIO_ROOT/vps-sandbox-platform"
+PROJECT_DIR="$PORTFOLIO_ROOT/vps-demo-platform"
 
 if [[ -d "$PROJECT_DIR" ]]; then
-    mkdir -p "$DOCS_DEST/projects/04-vps-sandbox-platform"
+    mkdir -p "$DOCS_DEST/projects/vps-demo-platform"
 
     sync_file \
         "$PROJECT_DIR/README.md" \
-        "$DOCS_DEST/projects/04-vps-sandbox-platform/index.md" \
+        "$DOCS_DEST/projects/vps-demo-platform/index.md" \
         "VPS Demo Platform" \
         "material/server-security"
 
     if [[ -f "$PROJECT_DIR/GETTING_STARTED.md" ]]; then
         sync_file \
             "$PROJECT_DIR/GETTING_STARTED.md" \
-            "$DOCS_DEST/projects/04-vps-sandbox-platform/getting-started.md" \
+            "$DOCS_DEST/projects/vps-demo-platform/getting-started.md" \
             "Getting Started"
     fi
 
     if [[ -f "$PROJECT_DIR/ROADMAP.md" ]]; then
         sync_file \
             "$PROJECT_DIR/ROADMAP.md" \
-            "$DOCS_DEST/projects/04-vps-sandbox-platform/roadmap.md" \
+            "$DOCS_DEST/projects/vps-demo-platform/roadmap.md" \
             "Roadmap"
     fi
 
     # Sync images directory (C4 diagrams)
     if [[ -d "$PROJECT_DIR/images" ]]; then
-        mkdir -p "$DOCS_DEST/projects/04-vps-sandbox-platform/images"
-        cp "$PROJECT_DIR/images/"*.svg "$DOCS_DEST/projects/04-vps-sandbox-platform/images/" 2>/dev/null
-        img_count=$(ls "$DOCS_DEST/projects/04-vps-sandbox-platform/images/"*.svg 2>/dev/null | wc -l)
+        mkdir -p "$DOCS_DEST/projects/vps-demo-platform/images"
+        cp "$PROJECT_DIR/images/"*.svg "$DOCS_DEST/projects/vps-demo-platform/images/" 2>/dev/null
+        img_count=$(ls "$DOCS_DEST/projects/vps-demo-platform/images/"*.svg 2>/dev/null | wc -l)
         log_success "Copied $img_count SVG images to wiki"
     fi
 
@@ -219,19 +219,19 @@ if [[ -d "$PROJECT_DIR" ]]; then
         [[ -f "$PROJECT_DIR/docs/DEPLOYMENT.md" ]] && \
             sync_file \
                 "$PROJECT_DIR/docs/DEPLOYMENT.md" \
-                "$DOCS_DEST/projects/04-vps-sandbox-platform/deployment.md" \
+                "$DOCS_DEST/projects/vps-demo-platform/deployment.md" \
                 "Deployment"
 
         [[ -f "$PROJECT_DIR/docs/SECURITY.md" ]] && \
             sync_file \
                 "$PROJECT_DIR/docs/SECURITY.md" \
-                "$DOCS_DEST/projects/04-vps-sandbox-platform/security.md" \
+                "$DOCS_DEST/projects/vps-demo-platform/security.md" \
                 "Security"
 
         [[ -f "$PROJECT_DIR/docs/KUBERNETES_MIGRATION.md" ]] && \
             sync_file \
                 "$PROJECT_DIR/docs/KUBERNETES_MIGRATION.md" \
-                "$DOCS_DEST/projects/04-vps-sandbox-platform/kubernetes-migration.md" \
+                "$DOCS_DEST/projects/vps-demo-platform/kubernetes-migration.md" \
                 "Kubernetes Migration"
     fi
 else

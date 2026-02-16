@@ -19,7 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXPORTS_DIR="$SCRIPT_DIR/exports"
 PUML_DIR="$EXPORTS_DIR/puml"
 SVG_DIR="$EXPORTS_DIR/svg"
-DEST_DIR="$SCRIPT_DIR/../vps-sandbox-platform/images"
+DEST_DIR="$SCRIPT_DIR/../vps-demo-platform/images"
 
 # Clean flag
 if [[ "$1" == "--clean" ]]; then
@@ -103,10 +103,10 @@ for svg_file in "$SVG_DIR"/*.svg; do
 done
 
 # ============================================================================
-# Step 3: Copy and rename SVGs to vps-sandbox-platform/images/
+# Step 3: Copy and rename SVGs to vps-demo-platform/images/
 # ============================================================================
 
-echo "📦 Copying SVGs to vps-sandbox-platform/images/..."
+echo "📦 Copying SVGs to vps-demo-platform/images/..."
 
 # Map structurizr output names to clean names
 declare -A RENAME_MAP=(

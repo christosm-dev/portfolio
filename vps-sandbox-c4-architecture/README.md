@@ -1,7 +1,7 @@
 # VPS Sandbox Platform - C4 Architecture
 
 **Status**: 🚧 Planning
-**Project**: [VPS Sandbox Platform](../vps-sandbox-platform/)
+**Project**: [VPS Sandbox Platform](../vps-demo-platform/)
 **Purpose**: Define and visualize the architecture of the VPS Sandbox Platform using C4 model notation
 
 ## 🎯 Overview
@@ -212,7 +212,7 @@ Key architectural decisions will be documented in [`docs/ARCHITECTURE_DECISIONS.
 
 ## 🔗 Related Documentation
 
-- [VPS Sandbox Platform](../vps-sandbox-platform/README.md)
+- [VPS Sandbox Platform](../vps-demo-platform/README.md)
 - [C4 Literate Python](../c4-literate-python/README.md)
 - [Portfolio Overview](../README.md)
 - [Claude Instructions](../CLAUDE.md)

@@ -198,7 +198,7 @@ See the [Structurizr DSL documentation](https://github.com/structurizr/dsl/tree/
 - [Structurizr Lite Documentation](https://github.com/structurizr/lite)
 - [Structurizr DSL Language Reference](https://github.com/structurizr/dsl)
 - [C4 Model](https://c4model.com/)
-- [VPS Sandbox Platform README](../vps-sandbox-platform/README.md)
+- [VPS Sandbox Platform README](../vps-demo-platform/README.md)
 
 ## 🐛 Common Issues
 
