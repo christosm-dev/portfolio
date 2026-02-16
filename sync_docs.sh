@@ -178,9 +178,9 @@ else
 fi
 
 # ============================================================================
-# Sync Mini Project 4: VPS Demo Sandbox Platform
+# Sync VPS Demo Platform
 # ============================================================================
-log_info "Syncing Project 4: VPS Demo Sandbox Platform"
+log_info "Syncing VPS Demo Platform"
 PROJECT_DIR="$PORTFOLIO_ROOT/vps-sandbox-platform"
 
 if [[ -d "$PROJECT_DIR" ]]; then
@@ -189,7 +189,7 @@ if [[ -d "$PROJECT_DIR" ]]; then
     sync_file \
         "$PROJECT_DIR/README.md" \
         "$DOCS_DEST/projects/04-vps-sandbox-platform/index.md" \
-        "Project 4: VPS Sandbox Platform" \
+        "VPS Demo Platform" \
         "material/server-security"
 
     if [[ -f "$PROJECT_DIR/GETTING_STARTED.md" ]]; then
