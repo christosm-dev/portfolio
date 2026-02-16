@@ -17,8 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY main.py .
 
-# Create non-root user for security
-RUN useradd -m -u 1000 sandboxapi && \
+# Create non-root user and add to docker group for socket access
+RUN groupadd -g 987 docker && \
+    useradd -m -u 1000 -G docker sandboxapi && \
     chown -R sandboxapi:sandboxapi /app
 
 # Switch to non-root user

@@ -1,16 +1,43 @@
-# Zensical Sandbox Platform - Terraform Variables Example
+# Zensical Sandbox Platform - Terraform Variables
 #
-# Copy this file to terraform.tfvars and fill in your values
-# DO NOT commit terraform.tfvars to version control
+# Copy this file to terraform.tfvars and fill in your values:
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# DO NOT commit terraform.tfvars to version control.
 
-# Your Contabo VPS details
-vps_host = "YOUR_VPS_IP_ADDRESS"  # e.g., "203.0.113.42"
-vps_user = "root"                  # or your SSH user
+# Cloudflare API token for Let's Encrypt DNS challenge
+# Create at: https://dash.cloudflare.com/profile/api-tokens
+# Required permissions: Zone > DNS > Edit
+cf_dns_api_token = "your-cloudflare-api-token"
 
-# Path to your SSH private key
-ssh_private_key_path = "~/.ssh/id_rsa"
+# htpasswd hash for Traefik dashboard basic auth
+# Generate with: htpasswd -nB admin
+# Escape dollar signs: replace $ with $$
+traefik_basic_auth = "admin:$$2y$$05$$your-bcrypt-hash-here"
 
-# Optional: Domain configuration
-# domain_name = "sandbox.zensical.com"
-# enable_ssl = true
-# admin_email = "your.email@example.com"
+# Base domain (default: christosm.dev)
+# domain = "christosm.dev"
+
+# Traefik image tag (default: latest)
+# traefik_image_tag = "v3.2"
+
+# Log level: DEBUG, INFO, WARN, ERROR (default: INFO)
+# log_level = "INFO"
+
+# Sandbox API resource limits
+# api_memory_limit = 1024   # MB
+# api_cpu_shares   = 2048
+
+# =============================================================================
+# Monitoring Stack
+# =============================================================================
+
+# Image tags (defaults match docker-compose.yml)
+# prometheus_image_tag = "v2.50.0"
+# loki_image_tag       = "3.4.2"
+# promtail_image_tag   = "3.4.2"
+# grafana_image_tag    = "10.3.0"
+# portainer_image_tag  = "2.11.1"
+
+# Grafana admin password (change in production!)
+# grafana_admin_password = "admin"

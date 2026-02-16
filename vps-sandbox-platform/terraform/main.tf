@@ -1,309 +1,599 @@
 # Zensical Sandbox Platform - Terraform Configuration
-# 
-# This Terraform configuration provisions and configures a VPS for running
-# the sandbox platform. It demonstrates Infrastructure as Code practices
-# and can be adapted for various cloud providers.
+#
+# Manages Docker resources natively via the Terraform Docker provider.
+# Scope: Traefik reverse proxy, Sandbox API, and monitoring stack
+# (Prometheus, Loki, Promtail, Grafana, Portainer).
 
 terraform {
   required_version = ">= 1.5.0"
-  
+
   required_providers {
-    # For Contabo VPS, we'll use null_provider with remote-exec
-    # In production, you might use Contabo's API or other cloud providers
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
     }
   }
 }
 
-# Variables for configuration
-variable "vps_host" {
-  description = "VPS hostname or IP address"
-  type        = string
+provider "docker" {
+  host = "unix:///var/run/docker.sock"
 }
 
-variable "vps_user" {
-  description = "SSH user for VPS access"
-  type        = string
-  default     = "root"
+# =============================================================================
+# Network
+# =============================================================================
+
+resource "docker_network" "sandbox_network" {
+  name   = "sandbox-network"
+  driver = "bridge"
+
+  ipam_config {
+    subnet = "172.20.0.0/16"
+  }
+
+  lifecycle {
+    ignore_changes = [ipam_config]
+  }
 }
 
-variable "ssh_private_key_path" {
-  description = "Path to SSH private key for VPS access"
-  type        = string
-  default     = "~/.ssh/id_rsa"
+# =============================================================================
+# Volumes
+# =============================================================================
+
+resource "docker_volume" "letsencrypt_data" {
+  name = "letsencrypt-data"
 }
 
-variable "domain_name" {
-  description = "Domain name for the sandbox platform (optional)"
-  type        = string
-  default     = ""
+resource "docker_volume" "prometheus_data" {
+  name = "prometheus-data"
 }
 
-variable "enable_ssl" {
-  description = "Enable SSL/TLS with Let's Encrypt"
-  type        = bool
-  default     = false
+resource "docker_volume" "loki_data" {
+  name = "loki-data"
 }
 
-variable "admin_email" {
-  description = "Admin email for SSL certificate notifications"
-  type        = string
-  default     = ""
+resource "docker_volume" "grafana_data" {
+  name = "grafana-data"
 }
 
-# Local variables
-locals {
-  project_name = "zensical-sandbox"
-  
-  # Files to copy to VPS
-  backend_files = [
-    "../backend/main.py",
-    "../backend/requirements.txt",
-    "../backend/Dockerfile"
+resource "docker_volume" "portainer_data" {
+  name = "portainer-data"
+}
+
+# =============================================================================
+# Traefik - Reverse Proxy & Load Balancer
+# =============================================================================
+
+resource "docker_image" "traefik" {
+  name = "traefik:${var.traefik_image_tag}"
+}
+
+resource "docker_container" "traefik" {
+  name  = "traefik"
+  image = docker_image.traefik.image_id
+
+  restart = "unless-stopped"
+
+  # Ports
+  ports {
+    internal = 80
+    external = 80
+  }
+
+  ports {
+    internal = 443
+    external = 443
+  }
+
+  # Command
+  command = [
+    # API and Dashboard
+    "--api.dashboard=true",
+    # Docker provider
+    "--providers.docker=true",
+    "--providers.docker.exposedbydefault=false",
+    "--providers.docker.network=sandbox-network",
+    # Entrypoints
+    "--entrypoints.web.address=:80",
+    "--entrypoints.websecure.address=:443",
+    # HTTP to HTTPS redirect
+    "--entrypoints.web.http.redirections.entrypoint.to=websecure",
+    "--entrypoints.web.http.redirections.entrypoint.scheme=https",
+    # Let's Encrypt with Cloudflare DNS Challenge
+    "--certificatesresolvers.letsencrypt.acme.email=laptop-yodel-chilli@duck.com",
+    "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json",
+    "--certificatesresolvers.letsencrypt.acme.dnschallenge=true",
+    "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare",
+    "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53",
+    # Logging
+    "--log.level=${var.log_level}",
+    "--accesslog=true",
+    # Metrics for Prometheus
+    "--metrics.prometheus=true",
+    "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0",
   ]
-  
-  compose_files = [
-    "../docker-compose.yml"
+
+  # Environment
+  env = [
+    "DOCKER_API_VERSION=1.45",
+    "CF_DNS_API_TOKEN=${var.cf_dns_api_token}",
   ]
+
+  # Volumes
+  volumes {
+    host_path      = "/var/run/docker.sock"
+    container_path = "/var/run/docker.sock"
+    read_only      = true
+  }
+
+  volumes {
+    volume_name    = docker_volume.letsencrypt_data.name
+    container_path = "/letsencrypt"
+  }
+
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
+  }
+
+  # Labels - Traefik self-routing
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+
+  # Basic Auth middleware
+  labels {
+    label = "traefik.http.middlewares.admin-auth.basicauth.users"
+    value = var.traefik_basic_auth
+  }
+
+  # Dashboard router
+  labels {
+    label = "traefik.http.routers.traefik.rule"
+    value = "Host(`traefik.${var.domain}`)"
+  }
+
+  labels {
+    label = "traefik.http.routers.traefik.entrypoints"
+    value = "websecure"
+  }
+
+  labels {
+    label = "traefik.http.routers.traefik.tls.certresolver"
+    value = "letsencrypt"
+  }
+
+  labels {
+    label = "traefik.http.routers.traefik.service"
+    value = "api@internal"
+  }
+
+  labels {
+    label = "traefik.http.routers.traefik.middlewares"
+    value = "admin-auth"
+  }
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
 }
 
-# SSH connection configuration
-locals {
-  ssh_connection = {
-    type        = "ssh"
-    user        = var.vps_user
-    host        = var.vps_host
-    private_key = file(var.ssh_private_key_path)
-  }
-}
+# =============================================================================
+# Sandbox API
+# =============================================================================
 
-# Install Docker and dependencies
-resource "null_resource" "install_dependencies" {
-  connection {
-    type        = local.ssh_connection.type
-    user        = local.ssh_connection.user
-    host        = local.ssh_connection.host
-    private_key = local.ssh_connection.private_key
+resource "docker_image" "sandbox_api" {
+  name = "sandbox-api:latest"
+
+  build {
+    context    = "${path.module}/../backend"
+    dockerfile = "Dockerfile"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "# Update system packages",
-      "apt-get update",
-      "apt-get upgrade -y",
-      
-      "# Install Docker",
-      "apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
-      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -",
-      "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\"",
-      "apt-get update",
-      "apt-get install -y docker-ce docker-ce-cli containerd.io",
-      
-      "# Install Docker Compose",
-      "curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
-      "chmod +x /usr/local/bin/docker-compose",
-      
-      "# Start Docker service",
-      "systemctl start docker",
-      "systemctl enable docker",
-      
-      "# Create project directory",
-      "mkdir -p /opt/${local.project_name}",
-      "mkdir -p /opt/${local.project_name}/backend",
-      "mkdir -p /opt/${local.project_name}/logs",
-      
-      "# Install additional tools",
-      "apt-get install -y ufw fail2ban",
-      
-      "echo 'Dependencies installed successfully'"
-    ]
-  }
-}
-
-# Configure firewall
-resource "null_resource" "configure_firewall" {
-  depends_on = [null_resource.install_dependencies]
-  
-  connection {
-    type        = local.ssh_connection.type
-    user        = local.ssh_connection.user
-    host        = local.ssh_connection.host
-    private_key = local.ssh_connection.private_key
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "# Configure UFW firewall",
-      "ufw --force reset",
-      "ufw default deny incoming",
-      "ufw default allow outgoing",
-      "ufw allow ssh",
-      "ufw allow 80/tcp",
-      "ufw allow 443/tcp",
-      "ufw allow 8000/tcp",  # API port (remove in production, use nginx instead)
-      "ufw --force enable",
-      
-      "echo 'Firewall configured successfully'"
-    ]
+  triggers = {
+    dockerfile   = filemd5("${path.module}/../backend/Dockerfile")
+    main_py      = filemd5("${path.module}/../backend/main.py")
+    requirements = filemd5("${path.module}/../backend/requirements.txt")
   }
 }
 
-# Copy application files
-resource "null_resource" "copy_files" {
-  depends_on = [null_resource.install_dependencies]
-  
-  connection {
-    type        = local.ssh_connection.type
-    user        = local.ssh_connection.user
-    host        = local.ssh_connection.host
-    private_key = local.ssh_connection.private_key
-  }
+resource "docker_container" "sandbox_api" {
+  name  = "sandbox-api"
+  image = docker_image.sandbox_api.image_id
 
-  # Copy backend files
-  provisioner "file" {
-    source      = "../backend/"
-    destination = "/opt/${local.project_name}/backend"
-  }
+  restart = "unless-stopped"
 
-  # Copy docker-compose
-  provisioner "file" {
-    source      = "../docker-compose.yml"
-    destination = "/opt/${local.project_name}/docker-compose.yml"
-  }
-}
-
-# Pull Docker images
-resource "null_resource" "pull_images" {
-  depends_on = [null_resource.copy_files]
-  
-  connection {
-    type        = local.ssh_connection.type
-    user        = local.ssh_connection.user
-    host        = local.ssh_connection.host
-    private_key = local.ssh_connection.private_key
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "cd /opt/${local.project_name}",
-      
-      "# Pull base images for sandbox environments",
-      "docker pull python:3.11-slim",
-      "docker pull node:18-alpine",
-      "docker pull bash:5.2-alpine3.19",
-      
-      "echo 'Docker images pulled successfully'"
-    ]
-  }
-}
-
-# Deploy application
-resource "null_resource" "deploy_application" {
-  depends_on = [
-    null_resource.copy_files,
-    null_resource.pull_images,
-    null_resource.configure_firewall
+  # Environment
+  env = [
+    "PYTHONUNBUFFERED=1",
+    "LOG_LEVEL=${var.log_level}",
   ]
-  
-  connection {
-    type        = local.ssh_connection.type
-    user        = local.ssh_connection.user
-    host        = local.ssh_connection.host
-    private_key = local.ssh_connection.private_key
+
+  # Volumes - Docker socket for spawning sandbox containers
+  volumes {
+    host_path      = "/var/run/docker.sock"
+    container_path = "/var/run/docker.sock"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "cd /opt/${local.project_name}",
-      
-      "# Stop existing containers",
-      "docker-compose down || true",
-      
-      "# Build and start services",
-      "docker-compose build",
-      "docker-compose up -d",
-      
-      "# Wait for services to be healthy",
-      "sleep 10",
-      
-      "# Check status",
-      "docker-compose ps",
-      
-      "echo 'Application deployed successfully'"
-    ]
-  }
-}
-
-# Configure systemd service for auto-restart
-resource "null_resource" "configure_systemd" {
-  depends_on = [null_resource.deploy_application]
-  
-  connection {
-    type        = local.ssh_connection.type
-    user        = local.ssh_connection.user
-    host        = local.ssh_connection.host
-    private_key = local.ssh_connection.private_key
+  volumes {
+    host_path      = abspath("${path.module}/../logs")
+    container_path = "/app/logs"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "cat > /etc/systemd/system/${local.project_name}.service <<EOF",
-      "[Unit]",
-      "Description=Zensical Sandbox Platform",
-      "Requires=docker.service",
-      "After=docker.service",
-      "",
-      "[Service]",
-      "Type=oneshot",
-      "RemainAfterExit=yes",
-      "WorkingDirectory=/opt/${local.project_name}",
-      "ExecStart=/usr/local/bin/docker-compose up -d",
-      "ExecStop=/usr/local/bin/docker-compose down",
-      "TimeoutStartSec=0",
-      "",
-      "[Install]",
-      "WantedBy=multi-user.target",
-      "EOF",
-      
-      "systemctl daemon-reload",
-      "systemctl enable ${local.project_name}.service",
-      
-      "echo 'Systemd service configured successfully'"
-    ]
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
   }
+
+  # Labels - Traefik routing
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+
+  labels {
+    label = "traefik.http.routers.sandbox-api.rule"
+    value = "Host(`api.${var.domain}`)"
+  }
+
+  labels {
+    label = "traefik.http.routers.sandbox-api.entrypoints"
+    value = "websecure"
+  }
+
+  labels {
+    label = "traefik.http.routers.sandbox-api.tls.certresolver"
+    value = "letsencrypt"
+  }
+
+  labels {
+    label = "traefik.http.services.sandbox-api.loadbalancer.server.port"
+    value = "8000"
+  }
+
+  # Resource limits
+  memory     = var.api_memory_limit
+  cpu_shares = var.api_cpu_shares
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
+
+  depends_on = [docker_container.traefik]
 }
 
-# Outputs
-output "vps_ip" {
-  description = "VPS IP address"
-  value       = var.vps_host
+# =============================================================================
+# Prometheus - Metrics Collection
+# =============================================================================
+
+resource "docker_image" "prometheus" {
+  name = "prom/prometheus:${var.prometheus_image_tag}"
 }
 
-output "api_url" {
-  description = "API endpoint URL"
-  value       = "http://${var.vps_host}:8000"
+resource "docker_container" "prometheus" {
+  name  = "prometheus"
+  image = docker_image.prometheus.image_id
+
+  restart = "unless-stopped"
+
+  # Command
+  command = [
+    "--config.file=/etc/prometheus/prometheus.yml",
+    "--storage.tsdb.path=/prometheus",
+    "--storage.tsdb.retention.time=15d",
+    "--web.enable-lifecycle",
+  ]
+
+  # Volumes
+  volumes {
+    host_path      = abspath("${path.module}/../monitoring/prometheus/prometheus.yml")
+    container_path = "/etc/prometheus/prometheus.yml"
+    read_only      = true
+  }
+
+  volumes {
+    host_path      = abspath("${path.module}/../monitoring/prometheus/alerts")
+    container_path = "/etc/prometheus/alerts"
+    read_only      = true
+  }
+
+  volumes {
+    volume_name    = docker_volume.prometheus_data.name
+    container_path = "/prometheus"
+  }
+
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
+  }
+
+  # Labels - Traefik routing
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+
+  labels {
+    label = "traefik.http.routers.prometheus.rule"
+    value = "Host(`prometheus.${var.domain}`)"
+  }
+
+  labels {
+    label = "traefik.http.routers.prometheus.entrypoints"
+    value = "websecure"
+  }
+
+  labels {
+    label = "traefik.http.routers.prometheus.tls.certresolver"
+    value = "letsencrypt"
+  }
+
+  labels {
+    label = "traefik.http.routers.prometheus.middlewares"
+    value = "admin-auth@docker"
+  }
+
+  labels {
+    label = "traefik.http.services.prometheus.loadbalancer.server.port"
+    value = "9090"
+  }
+
+  # Resource limits
+  memory      = 512
+  cpu_shares  = 1024
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
+
+  depends_on = [docker_container.traefik]
 }
 
-output "health_check_url" {
-  description = "Health check endpoint"
-  value       = "http://${var.vps_host}:8000/health"
+# =============================================================================
+# Loki - Log Aggregation
+# =============================================================================
+
+resource "docker_image" "loki" {
+  name = "grafana/loki:${var.loki_image_tag}"
 }
 
-output "deployment_status" {
-  description = "Deployment completion status"
-  value       = "Deployment completed. Check API health at http://${var.vps_host}:8000/health"
+resource "docker_container" "loki" {
+  name  = "loki"
+  image = docker_image.loki.image_id
+
+  restart = "unless-stopped"
+
+  # Command
+  command = [
+    "-config.file=/etc/loki/loki-config.yml",
+  ]
+
+  # Volumes
+  volumes {
+    host_path      = abspath("${path.module}/../monitoring/loki/loki-config.yml")
+    container_path = "/etc/loki/loki-config.yml"
+    read_only      = true
+  }
+
+  volumes {
+    volume_name    = docker_volume.loki_data.name
+    container_path = "/loki"
+  }
+
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
+  }
+
+  # Resource limits
+  memory      = 512
+  cpu_shares  = 1024
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
 }
 
-output "next_steps" {
-  description = "Next steps for configuration"
-  value = <<-EOT
-    Next steps:
-    1. Test the API: curl http://${var.vps_host}:8000/health
-    2. Review logs: ssh ${var.vps_user}@${var.vps_host} "cd /opt/${local.project_name} && docker-compose logs"
-    3. Configure your frontend to use: http://${var.vps_host}:8000
-    4. Set up NGINX reverse proxy for production (SSL/TLS)
-    5. Configure domain DNS if using custom domain
-  EOT
+# =============================================================================
+# Promtail - Log Collection Agent
+# =============================================================================
+
+resource "docker_image" "promtail" {
+  name = "grafana/promtail:${var.promtail_image_tag}"
+}
+
+resource "docker_container" "promtail" {
+  name  = "promtail"
+  image = docker_image.promtail.image_id
+
+  restart = "unless-stopped"
+
+  # Command
+  command = [
+    "-config.file=/etc/promtail/promtail-config.yml",
+  ]
+
+  # Volumes
+  volumes {
+    host_path      = abspath("${path.module}/../monitoring/promtail/promtail-config.yml")
+    container_path = "/etc/promtail/promtail-config.yml"
+    read_only      = true
+  }
+
+  volumes {
+    host_path      = "/var/run/docker.sock"
+    container_path = "/var/run/docker.sock"
+    read_only      = true
+  }
+
+  volumes {
+    host_path      = "/var/log/syslog"
+    container_path = "/var/log/host/syslog"
+    read_only      = true
+  }
+
+  volumes {
+    host_path      = "/var/log/auth.log"
+    container_path = "/var/log/host/auth.log"
+    read_only      = true
+  }
+
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
+  }
+
+  # Resource limits
+  memory      = 256
+  cpu_shares  = 512
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
+
+  depends_on = [docker_container.loki]
+}
+
+# =============================================================================
+# Grafana - Metrics & Log Visualization
+# =============================================================================
+
+resource "docker_image" "grafana" {
+  name = "grafana/grafana:${var.grafana_image_tag}"
+}
+
+resource "docker_container" "grafana" {
+  name  = "grafana"
+  image = docker_image.grafana.image_id
+
+  restart = "unless-stopped"
+
+  # Environment
+  env = [
+    "GF_SECURITY_ADMIN_USER=admin",
+    "GF_SECURITY_ADMIN_PASSWORD=${var.grafana_admin_password}",
+    "GF_USERS_ALLOW_SIGN_UP=false",
+    "GF_SERVER_ROOT_URL=https://grafana.${var.domain}",
+    "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel",
+  ]
+
+  # Volumes
+  volumes {
+    volume_name    = docker_volume.grafana_data.name
+    container_path = "/var/lib/grafana"
+  }
+
+  volumes {
+    host_path      = abspath("${path.module}/../monitoring/grafana/provisioning")
+    container_path = "/etc/grafana/provisioning"
+    read_only      = true
+  }
+
+  volumes {
+    host_path      = abspath("${path.module}/../monitoring/grafana/dashboards")
+    container_path = "/var/lib/grafana/dashboards"
+    read_only      = true
+  }
+
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
+  }
+
+  # Labels - Traefik routing (no auth middleware - Grafana has its own)
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+
+  labels {
+    label = "traefik.http.routers.grafana.rule"
+    value = "Host(`grafana.${var.domain}`)"
+  }
+
+  labels {
+    label = "traefik.http.routers.grafana.entrypoints"
+    value = "websecure"
+  }
+
+  labels {
+    label = "traefik.http.routers.grafana.tls.certresolver"
+    value = "letsencrypt"
+  }
+
+  labels {
+    label = "traefik.http.services.grafana.loadbalancer.server.port"
+    value = "3000"
+  }
+
+  # Resource limits
+  memory      = 512
+  cpu_shares  = 1024
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
+
+  depends_on = [docker_container.traefik]
+}
+
+# =============================================================================
+# Portainer - Container Management UI
+# =============================================================================
+
+resource "docker_image" "portainer" {
+  name = "portainer/portainer-ce:${var.portainer_image_tag}"
+}
+
+resource "docker_container" "portainer" {
+  name  = "portainer"
+  image = docker_image.portainer.image_id
+
+  restart = "unless-stopped"
+
+  # Command
+  command = ["-H", "unix:///var/run/docker.sock"]
+
+  # Volumes
+  volumes {
+    host_path      = "/var/run/docker.sock"
+    container_path = "/var/run/docker.sock"
+    read_only      = true
+  }
+
+  volumes {
+    volume_name    = docker_volume.portainer_data.name
+    container_path = "/data"
+  }
+
+  # Network
+  networks_advanced {
+    name = docker_network.sandbox_network.name
+  }
+
+  # Labels - Traefik routing (no auth middleware - Portainer has its own)
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+
+  labels {
+    label = "traefik.http.routers.portainer.rule"
+    value = "Host(`portainer.${var.domain}`)"
+  }
+
+  labels {
+    label = "traefik.http.routers.portainer.entrypoints"
+    value = "websecure"
+  }
+
+  labels {
+    label = "traefik.http.routers.portainer.tls.certresolver"
+    value = "letsencrypt"
+  }
+
+  labels {
+    label = "traefik.http.services.portainer.loadbalancer.server.port"
+    value = "9000"
+  }
+
+  # Security
+  security_opts = ["no-new-privileges:true"]
+
+  depends_on = [docker_container.traefik]
 }
