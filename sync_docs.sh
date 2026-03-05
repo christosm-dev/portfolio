@@ -178,6 +178,23 @@ else
 fi
 
 # ============================================================================
+# Sync Mini Project 4: Prometheus-Grafana Monitoring Stack
+# ============================================================================
+log_info "Syncing Project 4: Prometheus-Grafana Monitoring Stack"
+PROJECT_DIR="$PORTFOLIO_ROOT/mini-projects/project4-monitoring-stack"
+
+if [[ -d "$PROJECT_DIR" ]]; then
+    mkdir -p "$DOCS_DEST/projects/04-monitoring-stack"
+    sync_file \
+        "$PROJECT_DIR/README.md" \
+        "$DOCS_DEST/projects/04-monitoring-stack/index.md" \
+        "Project 4: Prometheus + Grafana Monitoring Stack" \
+        "simple/grafana"
+else
+    log_warning "Project directory not found: $PROJECT_DIR"
+fi
+
+# ============================================================================
 # Sync VPS Demo Platform
 # ============================================================================
 log_info "Syncing VPS Demo Platform"
@@ -264,11 +281,15 @@ PROJECT_DIR="$PORTFOLIO_ROOT/c4-literate-python"
 if [[ -d "$PROJECT_DIR" ]]; then
     mkdir -p "$DOCS_DEST/projects/c4-literate-python"
 
-    sync_file \
-        "$PROJECT_DIR/README.md" \
-        "$DOCS_DEST/projects/c4-literate-python/index.md" \
-        "C4 Literate Python" \
-        "simple/python"
+    if [[ -f "$PROJECT_DIR/README.md" ]]; then
+        sync_file \
+            "$PROJECT_DIR/README.md" \
+            "$DOCS_DEST/projects/c4-literate-python/index.md" \
+            "C4 Literate Python" \
+            "simple/python"
+    else
+        log_warning "c4-literate-python/README.md not found — project may be incomplete, skipping"
+    fi
 
     if [[ -f "$PROJECT_DIR/USAGE_EXAMPLE.md" ]]; then
         sync_file \
