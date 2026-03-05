@@ -44,6 +44,28 @@ project3-ansible-docker/
 └── README.md               # This file
 ```
 
+## Architecture
+
+```
+┌────────────────────────────────────────────────────────┐
+│                     Local Machine                      │
+│                                                        │
+│  ansible-playbook playbook.yml                         │
+│            │                                           │
+│            │  SSH (ports 2221 / 2222 / 2223)           │
+│      ┌─────┼─────────────┐                             │
+│      ▼     ▼             ▼                             │
+│  ┌────────┐ ┌────────┐ ┌────────┐                     │
+│  │target1 │ │target2 │ │target3 │  ← Ubuntu + SSH     │
+│  │ :2221  │ │ :2222  │ │ :2223  │                     │
+│  │ NGINX  │ │ NGINX  │ │ NGINX  │  ← Ansible deploys  │
+│  └────────┘ └────────┘ └────────┘                     │
+│                                                        │
+│  Docker Compose provisions all three containers        │
+│  Ansible inventory maps each to a host group           │
+└────────────────────────────────────────────────────────┘
+```
+
 ## Future Work
 
 - [ ] Refactor playbook into Ansible roles for reusability

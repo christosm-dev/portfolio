@@ -39,6 +39,33 @@ project2-k8s-python-app/
 └── README.md           # This file
 ```
 
+## Architecture
+
+```
+  kubectl / http://$(minikube ip):30080
+          │
+          ▼
+┌─────────────────────────────────────────────┐
+│               Minikube Cluster               │
+│                                              │
+│  ┌───────────────────────────────────────┐  │
+│  │          NodePort Service             │  │
+│  │          port 80 → 30080             │  │
+│  └──────────────────┬────────────────────┘  │
+│                     │ load balances          │
+│           ┌─────────┼─────────┐             │
+│           ▼         ▼         ▼             │
+│  ┌────────────┐ ┌────────────┐ ┌──────────┐ │
+│  │   Pod 1    │ │   Pod 2    │ │  Pod 3   │ │
+│  │   Flask    │ │   Flask    │ │  Flask   │ │
+│  │  :5000     │ │  :5000     │ │  :5000   │ │
+│  └────────────┘ └────────────┘ └──────────┘ │
+│                                              │
+│  Deployment manages replicas and rolling     │
+│  updates; pods self-heal on failure          │
+└─────────────────────────────────────────────┘
+```
+
 ## Future Work
 
 - [ ] Add ConfigMaps and Secrets for externalised configuration

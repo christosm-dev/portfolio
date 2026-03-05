@@ -33,6 +33,35 @@ project1-terraform-docker/
 └── README.md         # This file
 ```
 
+## Architecture
+
+```
+┌──────────────────────────────────────────┐
+│               Local Machine              │
+│                                          │
+│  terraform apply                         │
+│       │                                  │
+│       ▼                                  │
+│  ┌─────────────────┐                     │
+│  │    Terraform     │  reads/writes       │
+│  │   terraform.    │◄───────────────┐    │
+│  │   tfstate        │                │    │
+│  └────────┬────────┘                │    │
+│           │ Docker provider API     │    │
+│           ▼                         │    │
+│  ┌──────────────────────────────┐   │    │
+│  │        Docker Engine         │   │    │
+│  │  ┌──────────────────────┐   │   │    │
+│  │  │   NGINX Container    │   │   │    │
+│  │  │   port 8080 → 80     │   │   │    │
+│  │  └──────────────────────┘   │   │    │
+│  └──────────────────────────────┘   │    │
+└──────────────────────────────────────────┘
+              │
+              ▼
+    http://localhost:8080
+```
+
 ## Future Work
 
 - [ ] Add Terraform variables for container port, image tag, and replica count
