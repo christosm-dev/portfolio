@@ -6,6 +6,31 @@
 
 This project demonstrates Kubernetes fundamentals by deploying a Python Flask web application to a local Minikube cluster. The deployment runs three replicas behind a NodePort Service, with liveness and readiness probes for health checking, and resource requests/limits for capacity management. It showcases core Kubernetes concepts: Deployments, Services, rolling updates, and self-healing.
 
+```
+  kubectl / http://$(minikube ip):30080
+          │
+          ▼
+┌─────────────────────────────────────────────┐
+│               Minikube Cluster               │
+│                                              │
+│  ┌───────────────────────────────────────┐  │
+│  │          NodePort Service             │  │
+│  │          port 80 → 30080             │  │
+│  └──────────────────┬────────────────────┘  │
+│                     │ load balances          │
+│           ┌─────────┼─────────┐             │
+│           ▼         ▼         ▼             │
+│  ┌────────────┐ ┌────────────┐ ┌──────────┐ │
+│  │   Pod 1    │ │   Pod 2    │ │  Pod 3   │ │
+│  │   Flask    │ │   Flask    │ │  Flask   │ │
+│  │  :5000     │ │  :5000     │ │  :5000   │ │
+│  └────────────┘ └────────────┘ └──────────┘ │
+│                                              │
+│  Deployment manages replicas and rolling     │
+│  updates; pods self-heal on failure          │
+└─────────────────────────────────────────────┘
+```
+
 ## Technology Stack
 
 | Technology | Role |
@@ -37,33 +62,6 @@ project2-k8s-python-app/
 │   └── service.yaml    # NodePort Service: port 80 → 5000, nodePort 30080
 ├── .gitignore
 └── README.md           # This file
-```
-
-## Architecture
-
-```
-  kubectl / http://$(minikube ip):30080
-          │
-          ▼
-┌─────────────────────────────────────────────┐
-│               Minikube Cluster               │
-│                                              │
-│  ┌───────────────────────────────────────┐  │
-│  │          NodePort Service             │  │
-│  │          port 80 → 30080             │  │
-│  └──────────────────┬────────────────────┘  │
-│                     │ load balances          │
-│           ┌─────────┼─────────┐             │
-│           ▼         ▼         ▼             │
-│  ┌────────────┐ ┌────────────┐ ┌──────────┐ │
-│  │   Pod 1    │ │   Pod 2    │ │  Pod 3   │ │
-│  │   Flask    │ │   Flask    │ │  Flask   │ │
-│  │  :5000     │ │  :5000     │ │  :5000   │ │
-│  └────────────┘ └────────────┘ └──────────┘ │
-│                                              │
-│  Deployment manages replicas and rolling     │
-│  updates; pods self-heal on failure          │
-└─────────────────────────────────────────────┘
 ```
 
 ## Future Work

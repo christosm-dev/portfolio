@@ -6,35 +6,6 @@
 
 This project demonstrates Terraform fundamentals using the Docker provider to provision infrastructure locally. The Terraform configuration pulls an official NGINX image, creates a container with port mapping, and manages the full lifecycle (init, plan, apply, destroy) - demonstrating declarative Infrastructure as Code principles without requiring cloud provider accounts.
 
-## Technology Stack
-
-| Technology | Role |
-|------------|------|
-| Terraform | Infrastructure as Code - declarative resource provisioning |
-| Docker | Container runtime targeted by the Terraform Docker provider |
-| NGINX | Web server deployed as the managed container |
-| HCL | HashiCorp Configuration Language for Terraform files |
-
-## Key Features
-
-- Declarative infrastructure provisioning with Terraform HCL
-- Docker provider integration for local container management
-- Resource dependency chaining (image → container)
-- State management for tracking deployed infrastructure
-- Output values for deployment information
-
-## Codebase Overview
-
-```
-project1-terraform-docker/
-├── main.tf           # Core Terraform config: provider, image, and container resources
-├── outputs.tf        # Output definitions: container ID, name, image ID, access URL
-├── .gitignore        # Excludes Terraform state files and working directories
-└── README.md         # This file
-```
-
-## Architecture
-
 ```
 ┌──────────────────────────────────────────┐
 │               Local Machine              │
@@ -60,6 +31,33 @@ project1-terraform-docker/
               │
               ▼
     http://localhost:8080
+```
+
+## Technology Stack
+
+| Technology | Role |
+|------------|------|
+| Terraform | Infrastructure as Code - declarative resource provisioning |
+| Docker | Container runtime targeted by the Terraform Docker provider |
+| NGINX | Web server deployed as the managed container |
+| HCL | HashiCorp Configuration Language for Terraform files |
+
+## Key Features
+
+- Declarative infrastructure provisioning with Terraform HCL
+- Docker provider integration for local container management
+- Resource dependency chaining (image → container)
+- State management for tracking deployed infrastructure
+- Output values for deployment information
+
+## Codebase Overview
+
+```
+project1-terraform-docker/
+├── main.tf           # Core Terraform config: provider, image, and container resources
+├── outputs.tf        # Output definitions: container ID, name, image ID, access URL
+├── .gitignore        # Excludes Terraform state files and working directories
+└── README.md         # This file
 ```
 
 ## Future Work

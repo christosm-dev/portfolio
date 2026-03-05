@@ -6,6 +6,34 @@
 
 This project demonstrates CI/CD fundamentals by building a GitHub Actions pipeline that runs automatically on every push to `main`. A Flask task-tracker API with ten unit tests provides real work for the pipeline to do: the `test` job runs pytest and flake8, the `build` job produces a Docker image pushed to GitHub Container Registry (GHCR) with both a SHA tag and `:latest`, and the `deploy` job spins up a Minikube cluster inside the runner, applies the Kubernetes manifests, waits for a healthy rollout, then runs a port-forward smoke test. Path filters ensure the pipeline only triggers when project files change, not on every portfolio commit.
 
+```
+  git push to main
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    GitHub Actions Runner                     │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  test job                                           │   │
+│  │  pytest (10 tests) · flake8 lint                   │   │
+│  └──────────────────────┬──────────────────────────────┘   │
+│                         │ ✓ passes                          │
+│                         ▼                                   │
+│  ┌──────────────────┐       ┌──────────────────────────┐   │
+│  │  build job       │──────►│  GHCR                    │   │
+│  │                  │ push  │  flask-tasks:sha-abc1234  │   │
+│  └──────────────────┘       │  flask-tasks:latest      │   │
+│         │                   └──────────────────────────┘   │
+│         │ ✓ image pushed                                    │
+│         ▼                                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  deploy job                                         │   │
+│  │  Minikube (in runner) ← kubectl apply               │   │
+│  │  rollout status ✓  smoke test ✓                     │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## Technology Stack
 
 | Technology | Role |
@@ -48,36 +76,6 @@ project5-cicd-github-actions/
 # Workflow lives at the portfolio root:
 .github/workflows/
 └── project5-ci-cd.yml    # Three-job pipeline with path filters
-```
-
-## Architecture
-
-```
-  git push to main
-        │
-        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    GitHub Actions Runner                     │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  test job                                           │   │
-│  │  pytest (10 tests) · flake8 lint                   │   │
-│  └──────────────────────┬──────────────────────────────┘   │
-│                         │ ✓ passes                          │
-│                         ▼                                   │
-│  ┌──────────────────┐       ┌──────────────────────────┐   │
-│  │  build job       │──────►│  GHCR                    │   │
-│  │                  │ push  │  flask-tasks:sha-abc1234  │   │
-│  └──────────────────┘       │  flask-tasks:latest      │   │
-│         │                   └──────────────────────────┘   │
-│         │ ✓ image pushed                                    │
-│         ▼                                                   │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  deploy job                                         │   │
-│  │  Minikube (in runner) ← kubectl apply               │   │
-│  │  rollout status ✓  smoke test ✓                     │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Future Work

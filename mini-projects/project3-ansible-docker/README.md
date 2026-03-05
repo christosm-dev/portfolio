@@ -6,6 +6,26 @@
 
 This project demonstrates Ansible fundamentals by automating the configuration of multiple Docker containers acting as remote hosts. Three Ubuntu containers running SSH are provisioned with Docker Compose, then Ansible configures all three simultaneously - installing NGINX, deploying Jinja2-templated web pages, and managing services. The project showcases idempotent automation, inventory management, and configuration-as-code practices.
 
+```
+┌────────────────────────────────────────────────────────┐
+│                     Local Machine                      │
+│                                                        │
+│  ansible-playbook playbook.yml                         │
+│            │                                           │
+│            │  SSH (ports 2221 / 2222 / 2223)           │
+│      ┌─────┼─────────────┐                             │
+│      ▼     ▼             ▼                             │
+│  ┌────────┐ ┌────────┐ ┌────────┐                     │
+│  │target1 │ │target2 │ │target3 │  ← Ubuntu + SSH     │
+│  │ :2221  │ │ :2222  │ │ :2223  │                     │
+│  │ NGINX  │ │ NGINX  │ │ NGINX  │  ← Ansible deploys  │
+│  └────────┘ └────────┘ └────────┘                     │
+│                                                        │
+│  Docker Compose provisions all three containers        │
+│  Ansible inventory maps each to a host group           │
+└────────────────────────────────────────────────────────┘
+```
+
 ## Technology Stack
 
 | Technology | Role |
@@ -42,28 +62,6 @@ project3-ansible-docker/
 ├── adhoc-commands.sh       # Example ad-hoc commands for quick tasks
 ├── .gitignore
 └── README.md               # This file
-```
-
-## Architecture
-
-```
-┌────────────────────────────────────────────────────────┐
-│                     Local Machine                      │
-│                                                        │
-│  ansible-playbook playbook.yml                         │
-│            │                                           │
-│            │  SSH (ports 2221 / 2222 / 2223)           │
-│      ┌─────┼─────────────┐                             │
-│      ▼     ▼             ▼                             │
-│  ┌────────┐ ┌────────┐ ┌────────┐                     │
-│  │target1 │ │target2 │ │target3 │  ← Ubuntu + SSH     │
-│  │ :2221  │ │ :2222  │ │ :2223  │                     │
-│  │ NGINX  │ │ NGINX  │ │ NGINX  │  ← Ansible deploys  │
-│  └────────┘ └────────┘ └────────┘                     │
-│                                                        │
-│  Docker Compose provisions all three containers        │
-│  Ansible inventory maps each to a host group           │
-└────────────────────────────────────────────────────────┘
 ```
 
 ## Future Work
