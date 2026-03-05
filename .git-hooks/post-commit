@@ -16,10 +16,15 @@
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 SUBMODULE="$REPO_ROOT/christosm.dev"
 
-# Skip if christosm.dev isn't a submodule with its own .git
-if [[ ! -d "$SUBMODULE/.git" ]]; then
+# Skip if christosm.dev isn't a git repo at all
+if ! git -C "$SUBMODULE" rev-parse --git-dir &>/dev/null; then
     exit 0
 fi
+
+# Unset git environment variables injected by the parent hook runner.
+# Without this, GIT_DIR points at the parent repo's .git and submodule
+# git commands fail to locate the correct index and object store.
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE
 
 # Check if the submodule has uncommitted changes
 if git -C "$SUBMODULE" diff --quiet && git -C "$SUBMODULE" diff --cached --quiet; then

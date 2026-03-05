@@ -23,12 +23,6 @@ echo ""
 if [[ -f "$SYNC_SCRIPT" ]]; then
     if bash "$SYNC_SCRIPT" --quiet; then
         echo "✅ Documentation synced successfully"
-
-        # Add synced files to staging area (if christosm.dev is not a separate repo)
-        if [[ ! -d "$REPO_ROOT/christosm.dev/.git" ]]; then
-            cd "$REPO_ROOT/christosm.dev/docs" && git add -A
-        fi
-
         echo ""
         exit 0
     else
