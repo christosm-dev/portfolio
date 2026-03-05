@@ -195,6 +195,23 @@ else
 fi
 
 # ============================================================================
+# Sync Mini Project 5: GitHub Actions CI/CD Pipeline
+# ============================================================================
+log_info "Syncing Project 5: GitHub Actions CI/CD Pipeline"
+PROJECT_DIR="$PORTFOLIO_ROOT/mini-projects/project5-cicd-github-actions"
+
+if [[ -d "$PROJECT_DIR" ]]; then
+    mkdir -p "$DOCS_DEST/projects/05-cicd-github-actions"
+    sync_file \
+        "$PROJECT_DIR/README.md" \
+        "$DOCS_DEST/projects/05-cicd-github-actions/index.md" \
+        "Project 5: GitHub Actions CI/CD Pipeline" \
+        "simple/githubactions"
+else
+    log_warning "Project directory not found: $PROJECT_DIR"
+fi
+
+# ============================================================================
 # Sync VPS Demo Platform
 # ============================================================================
 log_info "Syncing VPS Demo Platform"

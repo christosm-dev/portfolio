@@ -1,0 +1,113 @@
+name: Project 5 - CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mini-projects/project5-cicd-github-actions/**"
+      - ".github/workflows/project5-ci-cd.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "mini-projects/project5-cicd-github-actions/**"
+      - ".github/workflows/project5-ci-cd.yml"
+
+env:
+  IMAGE_NAME: ${{ github.repository_owner }}/flask-tasks
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Run unit tests and lint — executes on every push and pull request
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install flask==3.0.3 pytest==8.3.3 flake8
+
+      - name: Run tests
+        run: pytest test_app.py -v
+        working-directory: mini-projects/project5-cicd-github-actions/app
+
+      - name: Lint
+        run: flake8 . --max-line-length=100
+        working-directory: mini-projects/project5-cicd-github-actions/app
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Build Docker image and push to GHCR — runs on push to main only
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build & Push Image
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: mini-projects/project5-cicd-github-actions/app
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Deploy to Minikube and run smoke tests — runs after successful build
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to Kubernetes
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@master
+
+      - name: Build image into Minikube
+        # Point the local Docker CLI at Minikube's daemon so the image is
+        # available inside the cluster without a registry pull.
+        run: |
+          eval $(minikube docker-env)
+          docker build -t flask-tasks:latest \
+            mini-projects/project5-cicd-github-actions/app/
+
+      - name: Deploy to cluster
+        run: |
+          kubectl apply -f mini-projects/project5-cicd-github-actions/k8s/
+          kubectl rollout status deployment/flask-tasks --timeout=120s
+
+      - name: Smoke test
+        run: |
+          kubectl port-forward svc/flask-tasks 8080:80 &
+          sleep 5
+          curl -sf http://localhost:8080/health | grep '"healthy"'
+          curl -sf http://localhost:8080/tasks
+          echo "Smoke test passed"
