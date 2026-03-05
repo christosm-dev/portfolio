@@ -29,6 +29,12 @@ echo -e "${BLUE}  Git Hooks Setup for Documentation Sync${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
+# Initialise submodules if they are empty (handles plain `git clone` without --recurse-submodules)
+echo "📦 Initialising git submodules..."
+git -C "$PORTFOLIO_ROOT" submodule update --init --recursive
+echo -e "${GREEN}✓${NC} Submodules initialised"
+echo ""
+
 # Make sync script executable
 chmod +x "$PORTFOLIO_ROOT/sync_docs.sh"
 echo -e "${GREEN}✓${NC} Made sync_docs.sh executable"
@@ -145,6 +151,10 @@ echo -e "${GREEN}✅ Setup complete!${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 echo "📖 Usage:"
+echo ""
+echo "  • Clone with submodules on a new machine:"
+echo "      git clone --recurse-submodules git@github.com:christosm-dev/portfolio.git"
+echo "      cd portfolio && ./setup-hooks.sh"
 echo ""
 echo "  • Make changes to your project documentation files"
 echo "  • Commit as usual: git commit -m 'Update docs'"
