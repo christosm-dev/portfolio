@@ -31,6 +31,12 @@ jobs:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pull latest changes
+        # Pull before modifying any files so the working tree is clean when
+        # rebase runs. Pulling after staging causes 'index contains uncommitted
+        # changes' because rebase requires a clean index.
+        run: git pull --rebase origin main
+
       - name: Derive image tag from triggering commit
         id: tag
         run: |
@@ -63,9 +69,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No change — image tag was already up to date"
           else
-            # Pull latest to avoid push rejection if another commit landed meanwhile
-            git pull --rebase origin main
-
             git commit -m "Update flask-tasks-prod image tag to ${{ steps.tag.outputs.tag }}"
             git push origin main
             echo "Manifest updated and pushed — ArgoCD will sync within its poll interval"
