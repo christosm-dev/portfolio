@@ -1,0 +1,71 @@
+groups:
+  - name: flask-app
+    rules:
+
+      # ── Availability ────────────────────────────────────────────────────────────
+
+      - alert: FlaskAppDown
+        expr: up{job="flask-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          job: flask-app
+        annotations:
+          summary: "Flask application is unreachable"
+          description: "Prometheus cannot scrape the Flask metrics endpoint. The application may be crashed or restarting."
+
+      # ── Error rate ──────────────────────────────────────────────────────────────
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{http_status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m])) * 100 > 10
+        for: 2m
+        labels:
+          severity: warning
+          job: flask-app
+        annotations:
+          summary: "Elevated 5xx error rate"
+          description: "Error rate is {{ $value | printf \"%.1f\" }}% over the last 5 minutes (threshold: 10%)."
+
+      - alert: CriticalErrorRate
+        expr: |
+          sum(rate(http_requests_total{http_status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m])) * 100 > 25
+        for: 1m
+        labels:
+          severity: critical
+          job: flask-app
+        annotations:
+          summary: "Critical 5xx error rate"
+          description: "Error rate is {{ $value | printf \"%.1f\" }}% over the last 5 minutes (threshold: 25%)."
+
+      # ── Latency ─────────────────────────────────────────────────────────────────
+
+      - alert: HighP95Latency
+        expr: |
+          histogram_quantile(0.95,
+            sum by(le) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          job: flask-app
+        annotations:
+          summary: "High p95 request latency"
+          description: "p95 latency is {{ $value | printf \"%.3f\" }}s over the last 5 minutes (threshold: 500ms)."
+
+      - alert: CriticalP99Latency
+        expr: |
+          histogram_quantile(0.99,
+            sum by(le) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 1.0
+        for: 2m
+        labels:
+          severity: critical
+          job: flask-app
+        annotations:
+          summary: "Critical p99 request latency"
+          description: "p99 latency is {{ $value | printf \"%.3f\" }}s over the last 5 minutes (threshold: 1s)."

@@ -1,10 +1,17 @@
 import time
 import random
+import logging
 from flask import Flask, jsonify, Response, request, g
 from prometheus_client import (
     Counter, Histogram, Gauge, Info,
     generate_latest, CONTENT_TYPE_LATEST,
 )
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("metrics-app")
 
 app = Flask(__name__)
 
@@ -91,6 +98,7 @@ def health():
 def list_items():
     # Simulate variable read latency (e.g. database query)
     time.sleep(random.uniform(0.01, 0.15))
+    logger.info("GET /items returned %d items", len(_items))
     return jsonify({"items": _items, "count": len(_items)})
 
 
@@ -107,6 +115,7 @@ def create_item():
     }
     _items.append(item)
     _next_id += 1
+    logger.info("POST /items created item id=%d name=%s", item["id"], item["name"])
     return jsonify(item), 201
 
 
@@ -114,6 +123,7 @@ def create_item():
 def trigger_error():
     """Randomly returns 500 — useful for testing the error rate panel."""
     if random.random() < 0.5:
+        logger.warning("GET /error triggered simulated 500 response")
         return jsonify({"error": "simulated server error"}), 500
     time.sleep(random.uniform(0.1, 0.4))
     return jsonify({"status": "ok"})

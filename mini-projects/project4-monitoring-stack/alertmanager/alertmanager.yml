@@ -1,0 +1,73 @@
+global:
+  # How long to wait before declaring an alert resolved if it stops firing.
+  resolve_timeout: 5m
+
+  # Default Slack webhook — replace with your own workspace URL.
+  # Generate one at: https://api.slack.com/apps → Incoming Webhooks
+  slack_api_url: "https://hooks.slack.com/services/REPLACE/WITH/YOUR_WEBHOOK"
+
+# ── Routing ──────────────────────────────────────────────────────────────────
+#
+# All alerts flow through the root route first, then are matched against the
+# child routes in order. The first matching child route wins unless `continue`
+# is set to true.
+
+route:
+  receiver: "slack-warnings"
+  group_by: ["alertname", "job"]   # Group related alerts into a single notification
+  group_wait: 30s                  # Wait before sending the first notification for a new group
+  group_interval: 5m               # Minimum interval between notifications for the same group
+  repeat_interval: 4h              # Re-notify about a still-firing alert after this duration
+
+  routes:
+    # Critical alerts go to a dedicated high-urgency channel
+    - matchers:
+        - severity = "critical"
+      receiver: "slack-critical"
+
+# ── Receivers ────────────────────────────────────────────────────────────────
+
+receivers:
+
+  # Warning-level alerts: posted to #alerts
+  - name: "slack-warnings"
+    slack_configs:
+      - channel: "#alerts"
+        send_resolved: true
+        title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}: {{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Job:* {{ .Labels.job }}
+          {{ end }}
+        footer: "Alertmanager — Project 4 Monitoring Stack"
+
+  # Critical alerts: posted to #alerts-critical with a prominent prefix
+  - name: "slack-critical"
+    slack_configs:
+      - channel: "#alerts-critical"
+        send_resolved: true
+        title: ':rotating_light: [{{ .Status | toUpper }}{{ if eq .Status "firing" }}: {{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Job:* {{ .Labels.job }}
+          {{ end }}
+        footer: "Alertmanager — Project 4 Monitoring Stack"
+
+# ── Inhibition rules ─────────────────────────────────────────────────────────
+#
+# Suppress warning-level notifications when a critical alert is already firing
+# for the same alertname. Avoids duplicate noise when the critical alert covers
+# the same condition at a higher threshold.
+
+inhibit_rules:
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal: ["alertname"]

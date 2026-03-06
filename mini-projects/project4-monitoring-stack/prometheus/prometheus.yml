@@ -2,6 +2,17 @@ global:
   scrape_interval: 15s       # How often to scrape targets
   evaluation_interval: 15s   # How often to evaluate alerting rules
 
+# ── Alertmanager integration ─────────────────────────────────────────────────
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+# ── Alerting rules ───────────────────────────────────────────────────────────
+rule_files:
+  - "rules/*.rules.yml"
+
+# ── Scrape targets ───────────────────────────────────────────────────────────
 scrape_configs:
 
   # Prometheus scrapes itself
@@ -18,3 +29,8 @@ scrape_configs:
   - job_name: "node-exporter"
     static_configs:
       - targets: ["node-exporter:9100"]
+
+  # Alertmanager metrics
+  - job_name: "alertmanager"
+    static_configs:
+      - targets: ["alertmanager:9093"]

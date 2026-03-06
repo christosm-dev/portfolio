@@ -1,0 +1,43 @@
+# Loki configuration — single-binary mode with local filesystem storage.
+# Suitable for local development and demo purposes.
+# For production use, replace filesystem storage with object storage (S3, GCS).
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: warn
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+# Schema version v13 with TSDB index is recommended for Loki 2.9+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  # Reject log lines older than 7 days to prevent accidental backfill
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  # Allow out-of-order ingestion within a 5-minute window
+  ingestion_burst_size_mb: 6
+
+ruler:
+  alertmanager_url: http://alertmanager:9093
