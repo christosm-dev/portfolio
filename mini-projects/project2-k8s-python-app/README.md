@@ -64,6 +64,64 @@ project2-k8s-python-app/
 └── README.md           # This file
 ```
 
+## Quick Start
+
+### Prerequisites
+
+```bash
+minikube status   # must be Running — if not: minikube start
+kubectl version   # must be v1.x
+docker info       # Docker daemon must be running
+```
+
+### Build the image into Minikube's daemon
+
+```bash
+cd mini-projects/project2-k8s-python-app
+
+# Point the local Docker CLI at Minikube's daemon so the image is
+# available inside the cluster without a registry push
+eval $(minikube docker-env)
+docker build -t flask-k8s-app:latest .
+```
+
+### Deploy
+
+```bash
+kubectl apply -f k8s/
+
+# Wait for all 3 replicas to become available
+kubectl rollout status deployment/python-app
+```
+
+### Verify
+
+```bash
+# Get the service URL
+minikube service python-app-service --url
+
+# Call the homepage — the pod hostname in the response changes
+# on each request, showing load balancer distribution across pods
+curl $(minikube service python-app-service --url)
+
+# Health endpoint
+curl $(minikube service python-app-service --url)/health
+```
+
+### Observe self-healing
+
+```bash
+# Delete a pod — Kubernetes recreates it immediately
+kubectl delete pod -l app=python-app --wait=false
+kubectl get pods -l app=python-app -w
+```
+
+### Tear down
+
+```bash
+kubectl delete -f k8s/
+```
+
 ## Future Work
 
 - [ ] Add ConfigMaps and Secrets for externalised configuration

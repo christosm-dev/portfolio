@@ -60,6 +60,58 @@ project1-terraform-docker/
 └── README.md         # This file
 ```
 
+## Quick Start
+
+### Prerequisites
+
+```bash
+terraform version   # must be v1.x
+docker info         # Docker daemon must be running
+```
+
+### Deploy
+
+```bash
+cd mini-projects/project1-terraform-docker
+
+# Download the Docker provider plugin
+terraform init
+
+# Preview the resources Terraform will create
+terraform plan
+
+# Create the NGINX container
+terraform apply
+
+# Confirm with 'yes' when prompted
+```
+
+Terraform prints the output values (container name, ID, and access URL) after apply completes.
+
+### Verify
+
+```bash
+curl http://localhost:8080
+# Expected: NGINX welcome page HTML
+```
+
+### Inspect state
+
+```bash
+# List all resources tracked in state
+terraform state list
+
+# Show detailed attributes of the container resource
+terraform state show docker_container.nginx
+```
+
+### Tear down
+
+```bash
+terraform destroy
+# Confirm with 'yes' — removes the container and releases the port
+```
+
 ## Future Work
 
 - [ ] Add Terraform variables for container port, image tag, and replica count

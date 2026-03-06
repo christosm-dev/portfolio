@@ -78,6 +78,56 @@ project5-cicd-github-actions/
 └── project5-ci-cd.yml    # Three-job pipeline with path filters
 ```
 
+## Quick Start
+
+### Run tests locally (no cluster needed)
+
+```bash
+cd mini-projects/project5-cicd-github-actions/app
+
+pip install flask==3.0.3 pytest flake8
+
+# Run the test suite
+pytest test_app.py -v
+
+# Run the linter
+flake8 . --max-line-length=100
+```
+
+Expected: 10 tests pass, 0 lint errors.
+
+### Trigger the CI/CD pipeline
+
+Push any change to a file under `mini-projects/project5-cicd-github-actions/` or to `.github/workflows/project5-ci-cd.yml` on `main`:
+
+```bash
+git add mini-projects/project5-cicd-github-actions/
+git commit -m "Trigger Project 5 pipeline"
+git push
+```
+
+Then watch the run at: `https://github.com/christosm-dev/portfolio/actions`
+
+The pipeline runs three jobs in sequence: `test` → `build` → `deploy`. Pull requests run `test` only — `build` and `deploy` are skipped.
+
+### Inspect the published image
+
+After a successful pipeline run, the image is available in GHCR:
+
+```bash
+docker pull ghcr.io/christosm-dev/flask-tasks:latest
+docker run -p 5000:5000 ghcr.io/christosm-dev/flask-tasks:latest
+curl http://localhost:5000/health
+```
+
+### Run the app locally without the pipeline
+
+```bash
+cd mini-projects/project5-cicd-github-actions/app
+flask --app app.py run
+curl http://localhost:5000/tasks
+```
+
 ## Future Work
 
 - [ ] Add a test coverage report published as a workflow artefact

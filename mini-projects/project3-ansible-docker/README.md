@@ -64,6 +64,67 @@ project3-ansible-docker/
 └── README.md               # This file
 ```
 
+## Quick Start
+
+### Prerequisites
+
+```bash
+docker compose version   # must be v2.x
+ansible --version        # must be v2.x
+```
+
+### Start the target containers
+
+```bash
+cd mini-projects/project3-ansible-docker
+
+# Bring up three Ubuntu+SSH containers as Ansible targets
+docker compose up -d
+
+# Wait a few seconds for the SSH daemon to start in each container
+sleep 3
+```
+
+### Verify Ansible connectivity
+
+```bash
+# Ping all hosts — expect 'pong' from all three
+ansible all -m ping
+```
+
+### Run the playbook
+
+```bash
+ansible-playbook playbook.yml
+```
+
+Ansible installs NGINX, renders Jinja2 templates with host-specific variables, and restarts the service on each target. The output shows each task's status (ok / changed) per host.
+
+### Verify the result
+
+```bash
+# Each target serves a custom NGINX page on its own port
+curl http://localhost:8081   # target1
+curl http://localhost:8082   # target2
+curl http://localhost:8083   # target3
+```
+
+Each response includes the hostname and a message generated from the Jinja2 template.
+
+### Re-run for idempotency
+
+```bash
+# Running again should show all tasks as 'ok' (no changes) —
+# this demonstrates Ansible's idempotent design
+ansible-playbook playbook.yml
+```
+
+### Tear down
+
+```bash
+docker compose down
+```
+
 ## Future Work
 
 - [ ] Refactor playbook into Ansible roles for reusability

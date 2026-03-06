@@ -70,6 +70,66 @@ project4-monitoring-stack/
 └── README.md
 ```
 
+## Quick Start
+
+### Prerequisites
+
+```bash
+docker compose version   # must be v2.x
+```
+
+### Start the stack
+
+```bash
+cd mini-projects/project4-monitoring-stack
+
+docker compose up -d
+
+# Verify all four services are running
+docker compose ps
+```
+
+### Access the dashboards
+
+Open Grafana at `http://localhost:3000` — username `admin`, password `admin`.
+
+The two dashboards are pre-provisioned and available immediately:
+
+- **System Metrics** — CPU, memory, disk, network I/O from Node Exporter
+- **App Metrics** — request rate, p50/p95/p99 latency, error rate from the Flask app
+
+### Generate load for meaningful data
+
+```bash
+# Run the weighted traffic generator in the background
+./scripts/generate_load.sh &
+LOAD_PID=$!
+
+# Let it run for a minute, then stop it
+sleep 60 && kill $LOAD_PID
+```
+
+The dashboards populate in real time as Prometheus scrapes the targets every 15 seconds.
+
+### Inspect Prometheus directly
+
+```bash
+# Open the Prometheus UI to explore raw metrics and query PromQL
+open http://localhost:9090
+
+# Example: query request rate for the Flask app
+# rate(http_requests_total[1m])
+```
+
+### Tear down
+
+```bash
+docker compose down
+
+# To also remove the Prometheus data volume
+docker compose down -v
+```
+
 ## Future Work
 
 - [ ] Add Prometheus alerting rules and wire up Alertmanager for threshold notifications
