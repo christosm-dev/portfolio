@@ -82,7 +82,7 @@ cd mini-projects/project2-k8s-python-app
 # Point the local Docker CLI at Minikube's daemon so the image is
 # available inside the cluster without a registry push
 eval $(minikube docker-env)
-docker build -t flask-k8s-app:latest .
+docker build -t python-flask-app:latest .
 ```
 
 ### Deploy
