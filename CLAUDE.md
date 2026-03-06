@@ -20,42 +20,28 @@ This document provides context and guidelines for working on Christos's DevOps/S
 
 ```
 portfolio-root/
-├── CLAUDE.md                           # This file - context for Claude
-├── README.md                           # Portfolio overview and navigation
+├── CLAUDE.md                                   # This file - context for Claude
+├── README.md                                   # Portfolio overview and navigation
+├── sync_docs.sh                                # Syncs all project READMEs to christosm.dev
+├── setup-hooks.sh                              # One-shot hook + submodule setup
 │
-├── mini-projects/                      # Foundational learning projects
-│   ├── 1-terraform-docker-nginx/       # Project 1: Terraform basics
-│   │   ├── README.md
-│   │   ├── terraform/
-│   │   ├── docker/
-│   │   └── docs/
-│   │
-│   ├── 2-k8s-python-app/               # Project 2: Kubernetes fundamentals
-│   │   ├── README.md
-│   │   ├── k8s/
-│   │   ├── app/
-│   │   └── docs/
-│   │
-│   └── 3-ansible-docker-demo/          # Project 3: Ansible automation
-│       ├── README.md
-│       ├── playbook.yml
-│       ├── inventory.ini
-│       ├── templates/
-│       ├── target/
-│       └── LEARNING_NOTES.md
+├── .github/
+│   └── workflows/
+│       ├── project5-ci-cd.yml                  # Project 5: test → build → deploy pipeline
+│       └── project7-image-updater.yml          # Project 7: image tag writeback for ArgoCD
 │
-├── christosm.dev/                      # Zensical static site
-│   ├── README.md
-│   ├── content/
-│   ├── static/
-│   └── config/
+├── mini-projects/                              # Foundational learning projects
+│   ├── project1-terraform-docker/             # Project 1: Terraform basics
+│   ├── project2-k8s-python-app/               # Project 2: Kubernetes fundamentals
+│   ├── project3-ansible-docker/               # Project 3: Ansible automation
+│   ├── project4-monitoring-stack/             # Project 4: Prometheus + Grafana
+│   ├── project5-cicd-github-actions/          # Project 5: GitHub Actions CI/CD
+│   ├── project6-helm-chart/                   # Project 6: Helm chart packaging
+│   └── project7-gitops-argocd/                # Project 7: GitOps with ArgoCD
 │
-└── vps-demo-platform/               # Advanced showcase project
-    ├── README.md
-    ├── backend/
-    ├── terraform/
-    ├── k8s/
-    └── docs/
+├── christosm.dev/                             # Zensical static site (git submodule)
+│
+└── vps-demo-platform/                         # Advanced showcase project (planning)
 ```
 
 ## 📋 Project Descriptions
@@ -121,7 +107,61 @@ portfolio-root/
 - Automate infrastructure tasks
 - Document automation patterns
 
-### 4. christosm.dev (Zensical)
+### 4. monitoring-stack
+**Purpose**: Demonstrate observability fundamentals with dashboards as code
+**Technologies**: Prometheus, Grafana, Node Exporter, Flask, Docker Compose
+**Complexity**: Intermediate
+**Certification Alignment**: CKA (monitoring)
+
+**Key Concepts**:
+- Metrics collection and time-series storage (Prometheus)
+- Dashboard provisioning as code (Grafana JSON)
+- Application instrumentation (prometheus_client)
+- Node Exporter for host system metrics
+- Docker Compose multi-service orchestration
+
+### 5. cicd-github-actions
+**Purpose**: Demonstrate CI/CD fundamentals with a real three-job pipeline
+**Technologies**: GitHub Actions, Docker, GHCR, Kubernetes (Minikube), Python/Flask
+**Complexity**: Intermediate
+**Certification Alignment**: CKAD (CI/CD patterns)
+
+**Key Concepts**:
+- Three-job dependency chain (test → build → deploy)
+- Path-based trigger filters
+- GHCR image publishing with SHA and latest tags
+- Minikube deployment inside a GitHub Actions runner
+- Smoke testing via port-forward
+
+### 6. helm-chart
+**Purpose**: Demonstrate Helm chart packaging and lifecycle management
+**Technologies**: Helm 3, Kubernetes, Go templates
+**Complexity**: Intermediate
+**Certification Alignment**: CKAD (Helm)
+
+**Key Concepts**:
+- Chart.yaml metadata and versioning
+- Parameterised templates with values overrides
+- Environment-specific values files (dev/prod)
+- Named templates in _helpers.tpl
+- Conditional resources (HPA)
+- ConfigMap checksum annotation for rolling restarts
+
+### 7. gitops-argocd
+**Purpose**: Demonstrate pull-based GitOps with self-healing cluster reconciliation
+**Technologies**: ArgoCD, Kubernetes, Helm, GitHub Actions
+**Complexity**: Intermediate-Advanced
+**Certification Alignment**: CKAD (GitOps/CD patterns), CKA (cluster tooling)
+
+**Key Concepts**:
+- ArgoCD Application CRD
+- Pull-based vs push-based CD (contrast with Project 5)
+- Automated sync with selfHeal and prune
+- Inline Helm values in Application manifests
+- Image tag writeback workflow (workflow_run trigger)
+- Self-healing demonstration
+
+### 8. christosm.dev (Zensical)
 **Purpose**: Static site generator for technical documentation and portfolio  
 **Technologies**: Static Site Generator (Hugo/Jekyll/Next.js), Markdown, HTML/CSS  
 **Complexity**: Varies  
@@ -379,14 +419,14 @@ Each iteration should be clearly documented.
 
 ## 🎯 Current Focus
 
-As of this document's creation, the current priorities are:
+As of March 2026, the current priorities are:
 
-1. **Mini projects (1-3)** - ✅ Complete and documented
-2. **christosm.dev** - Documentation site with auto-sync system implemented
-3. **vps-demo-platform** - Planning phase (not yet started)
-4. **Terraform certification preparation** - Ongoing
-5. **Kubernetes learning** - Preparing for CKA
-6. **Portfolio organization** - Structuring projects for presentation
+1. **Mini projects (1-7)** - ✅ All complete and documented
+2. **christosm.dev** - ✅ Auto-sync system live; docs published on every commit
+3. **Future Work items** - Iterating on enhancements across all seven mini-projects
+4. **vps-demo-platform** - Planning phase (not yet started)
+5. **Terraform certification preparation** - Ongoing
+6. **Kubernetes learning** - Preparing for CKA/CKAD
 
 ## 📊 Project Status Tracking
 
@@ -401,7 +441,7 @@ Use these markers in project READMEs:
 
 ---
 
-**Last Updated**: February 4, 2026  
+**Last Updated**: March 6, 2026
 **Portfolio Owner**: Christos  
 **Career Focus**: DevOps/SRE/Cloud/Platform Engineering  
 **Geographic Focus**: UK (Surrey), Fully Remote  
@@ -413,10 +453,14 @@ Use these markers in project READMEs:
 
 | Project | Status | Complexity | Primary Tech | Cert Alignment |
 |---------|--------|------------|--------------|----------------|
-| terraform-docker-nginx | ✅ Complete | Beginner | Terraform, Docker | Terraform Associate |
-| k8s-python-app | ✅ Complete | Intermediate | Kubernetes, Python | CKA, CKAD |
-| ansible-docker-demo | ✅ Complete | Beginner-Int | Ansible, Docker | RHCSA Ansible |
-| christosm.dev | 🏗️ In Development | Varies | SSG, Markdown | - |
+| project1-terraform-docker | ✅ Complete | Beginner | Terraform, Docker | Terraform Associate |
+| project2-k8s-python-app | ✅ Complete | Intermediate | Kubernetes, Python | CKA, CKAD |
+| project3-ansible-docker | ✅ Complete | Beginner-Int | Ansible, Docker | RHCSA Ansible |
+| project4-monitoring-stack | ✅ Complete | Intermediate | Prometheus, Grafana | CKA (monitoring) |
+| project5-cicd-github-actions | ✅ Complete | Intermediate | GitHub Actions, Docker | CKAD |
+| project6-helm-chart | ✅ Complete | Intermediate | Helm 3, K8s | CKAD (Helm) |
+| project7-gitops-argocd | ✅ Complete | Int-Advanced | ArgoCD, K8s, Helm | CKAD, CKA |
+| christosm.dev | ✅ Live | Varies | Zensical, Markdown | - |
 | vps-demo-platform | 🚧 Planning | Advanced | All | All |
 
 Use this table to quickly understand project status and focus areas.

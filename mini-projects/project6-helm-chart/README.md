@@ -1,5 +1,7 @@
 # Project 6: Helm Chart Packaging
 
+> Package the Flask task-tracker API as a reusable Helm chart with environment-specific values overrides, conditional HPA, and full lifecycle management. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/mini-projects/project6-helm-chart)**
+
 ## Project Overview
 
 This project packages the Flask task-tracker API (from Project 5) as a Helm chart — the standard way to distribute and manage Kubernetes applications. Rather than applying raw YAML manifests with `kubectl apply`, Helm adds versioning, templating, environment-specific configuration, and lifecycle commands (`install`, `upgrade`, `rollback`) on top of a Kubernetes cluster.

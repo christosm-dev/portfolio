@@ -1,5 +1,7 @@
 # Project 7: GitOps with ArgoCD
 
+> Pull-based GitOps: ArgoCD syncs the cluster from Git with self-healing, automated image tag updates, and zero manual kubectl commands. **[View source on GitHub](https://github.com/christosm-dev/portfolio/tree/main/mini-projects/project7-gitops-argocd)**
+
 ## Project Overview
 
 This project implements GitOps using ArgoCD — a pull-based continuous delivery tool that runs inside the Kubernetes cluster and continuously reconciles cluster state with a Git repository. Rather than a CI pipeline pushing changes into the cluster (Project 5's approach), ArgoCD watches Git and pulls changes into the cluster automatically.
