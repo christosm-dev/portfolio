@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "flask-tasks.fullname" . }}-config
+  labels:
+    {{- include "flask-tasks.labels" . | nindent 4 }}
+data:
+  # Injected into each pod as environment variables via envFrom in the Deployment.
+  APP_ENV: {{ .Values.config.appEnv | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  MAX_TASKS: {{ .Values.config.maxTasks | quote }}

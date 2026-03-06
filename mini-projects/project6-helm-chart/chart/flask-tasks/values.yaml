@@ -1,0 +1,58 @@
+# Default values for flask-tasks.
+# Override per environment using values-dev.yaml or values-prod.yaml.
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/christosm-dev/flask-tasks
+  pullPolicy: IfNotPresent
+  # Overrides appVersion when set. Use sha-<short> tags in production.
+  tag: "latest"
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5000
+  # Fixed nodePort so the address is predictable during demos.
+  # Remove this field to let Kubernetes assign a random port.
+  nodePort: 30091
+
+# Application configuration injected via ConfigMap environment variables.
+config:
+  appEnv: production
+  logLevel: INFO
+  maxTasks: "1000"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
+
+# Horizontal Pod Autoscaler — disabled by default, enabled in values-prod.yaml.
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+livenessProbe:
+  path: /health
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  path: /health
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Ingress — disabled by default. Enable and set host for production clusters
+# with an ingress controller (e.g. nginx-ingress or Minikube ingress addon).
+ingress:
+  enabled: false
+  className: ""
+  host: flask-tasks.local
+  path: /
+  pathType: Prefix

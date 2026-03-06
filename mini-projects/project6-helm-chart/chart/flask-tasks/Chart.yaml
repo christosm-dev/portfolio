@@ -1,0 +1,25 @@
+apiVersion: v2
+name: flask-tasks
+description: A Helm chart for the Flask task-tracker API
+type: application
+
+# Chart version — bump this on every chart change
+version: 0.1.0
+
+# Application version — matches the app image tag
+appVersion: "1.0.0"
+
+keywords:
+  - flask
+  - python
+  - tasks
+  - api
+  - rest
+
+maintainers:
+  - name: Christos
+    url: https://github.com/christosm-dev
+
+home: https://github.com/christosm-dev/portfolio
+sources:
+  - https://github.com/christosm-dev/portfolio/tree/main/mini-projects/project5-cicd-github-actions

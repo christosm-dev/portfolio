@@ -15,3 +15,4 @@ A collection of hands-on projects covering modern infrastructure automation, con
 | 3 | [Ansible + Docker](project3-ansible-docker/) | Ansible, Docker, SSH | Automate multi-container configuration management |
 | 4 | [Prometheus + Grafana](project4-monitoring-stack/) | Prometheus, Grafana, Node Exporter, Flask | Dashboards-as-code monitoring stack for system and application metrics |
 | 5 | [GitHub Actions CI/CD](project5-cicd-github-actions/) | GitHub Actions, Docker, GHCR, Kubernetes | Three-job pipeline: test, build to GHCR, deploy to Minikube |
+| 6 | [Helm Chart Packaging](project6-helm-chart/) | Helm 3, Kubernetes, Go templates | Package the Flask app as a reusable Helm chart with environment-specific values overrides |

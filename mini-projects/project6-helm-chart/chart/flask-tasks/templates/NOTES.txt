@@ -1,0 +1,43 @@
+Flask Tasks has been deployed successfully!
+
+Release : {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Image    : {{ include "flask-tasks.image" . }}
+Replicas : {{ .Values.replicaCount }}{{ if .Values.autoscaling.enabled }} (HPA: {{ .Values.autoscaling.minReplicas }}–{{ .Values.autoscaling.maxReplicas }}){{ end }}
+
+------------------------------------------------------------
+Access the API
+------------------------------------------------------------
+{{- if eq .Values.service.type "NodePort" }}
+On Minikube, get the URL with:
+
+  minikube service {{ include "flask-tasks.fullname" . }} --url
+
+Or use kubectl port-forward:
+
+  kubectl port-forward svc/{{ include "flask-tasks.fullname" . }} 8080:{{ .Values.service.port }}
+  curl http://localhost:8080/tasks
+{{- else if eq .Values.service.type "ClusterIP" }}
+Port-forward to access from your local machine:
+
+  kubectl port-forward svc/{{ include "flask-tasks.fullname" . }} 8080:{{ .Values.service.port }}
+  curl http://localhost:8080/tasks
+{{- end }}
+
+------------------------------------------------------------
+Useful commands
+------------------------------------------------------------
+Check rollout status:
+  kubectl rollout status deployment/{{ include "flask-tasks.fullname" . }}
+
+Inspect pods:
+  kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Tail logs:
+  kubectl logs -l app.kubernetes.io/instance={{ .Release.Name }} -f
+
+Upgrade with a new image tag:
+  helm upgrade {{ .Release.Name }} ./chart/flask-tasks --set image.tag=sha-<commit>
+
+Roll back to the previous release:
+  helm rollback {{ .Release.Name }}

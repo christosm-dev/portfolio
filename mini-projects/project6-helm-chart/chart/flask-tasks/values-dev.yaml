@@ -1,0 +1,27 @@
+# Development overrides.
+# Usage: helm install flask-tasks ./chart/flask-tasks -f values-dev.yaml
+#
+# Single replica, debug logging, relaxed resource limits.
+# Image is always pulled so you pick up local builds immediately.
+
+replicaCount: 1
+
+image:
+  pullPolicy: Always
+  tag: "latest"
+
+config:
+  appEnv: development
+  logLevel: DEBUG
+  maxTasks: "100"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+autoscaling:
+  enabled: false

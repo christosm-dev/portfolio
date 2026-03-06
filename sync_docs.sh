@@ -212,6 +212,23 @@ else
 fi
 
 # ============================================================================
+# Sync Mini Project 6: Helm Chart Packaging
+# ============================================================================
+log_info "Syncing Project 6: Helm Chart Packaging"
+PROJECT_DIR="$PORTFOLIO_ROOT/mini-projects/project6-helm-chart"
+
+if [[ -d "$PROJECT_DIR" ]]; then
+    mkdir -p "$DOCS_DEST/projects/06-helm-chart"
+    sync_file \
+        "$PROJECT_DIR/README.md" \
+        "$DOCS_DEST/projects/06-helm-chart/index.md" \
+        "Project 6: Helm Chart Packaging" \
+        "simple/helm"
+else
+    log_warning "Project directory not found: $PROJECT_DIR"
+fi
+
+# ============================================================================
 # Sync VPS Demo Platform
 # ============================================================================
 log_info "Syncing VPS Demo Platform"

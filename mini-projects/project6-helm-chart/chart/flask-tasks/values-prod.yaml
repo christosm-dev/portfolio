@@ -1,0 +1,34 @@
+# Production overrides.
+# Usage: helm upgrade --install flask-tasks ./chart/flask-tasks \
+#          -f values-prod.yaml \
+#          --set image.tag=sha-abc1234
+#
+# Three base replicas with HPA up to ten, higher resource limits,
+# warning-level logging, and a large task ceiling.
+# Always pin the image tag at deploy time — never use "latest" in production.
+
+replicaCount: 3
+
+image:
+  pullPolicy: IfNotPresent
+  # Set at deploy time: --set image.tag=sha-<commit>
+  tag: ""
+
+config:
+  appEnv: production
+  logLevel: WARNING
+  maxTasks: "10000"
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
