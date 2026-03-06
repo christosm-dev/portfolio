@@ -23,7 +23,7 @@ spec:
         replicaCount: 3
         image:
           pullPolicy: IfNotPresent
-          tag: "latest"  # image-tag: managed by project7-image-updater workflow
+          tag: "sha-a87519c"  # image-tag: managed by project7-image-updater workflow
         service:
           type: NodePort
           port: 80
