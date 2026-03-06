@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flask-tasks-prod
+  namespace: argocd
+  labels:
+    project: flask-tasks
+    environment: prod
+  annotations:
+    # image.tag below is updated automatically by the project7-image-updater
+    # GitHub Actions workflow after each successful Project 5 CI/CD run.
+    # Do not edit it manually — your change will be overwritten on next push.
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/christosm-dev/portfolio.git
+    targetRevision: main
+    path: mini-projects/project6-helm-chart/chart/flask-tasks
+    helm:
+      values: |
+        replicaCount: 3
+        image:
+          pullPolicy: IfNotPresent
+          tag: "latest"  # image-tag: managed by project7-image-updater workflow
+        service:
+          type: NodePort
+          port: 80
+          targetPort: 5000
+          nodePort: 30092
+        config:
+          appEnv: production
+          logLevel: WARNING
+          maxTasks: "10000"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        autoscaling:
+          enabled: true
+          minReplicas: 3
+          maxReplicas: 10
+          targetCPUUtilizationPercentage: 70
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: flask-tasks-prod
+
+  syncPolicy:
+    # Automated sync with self-healing and pruning.
+    # ArgoCD will apply any Git change automatically and revert manual edits.
+    automated:
+      selfHeal: true   # Reverts out-of-band cluster changes back to Git state
+      prune: true      # Removes resources that no longer exist in Git
+    syncOptions:
+      - CreateNamespace=true

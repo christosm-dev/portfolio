@@ -229,6 +229,23 @@ else
 fi
 
 # ============================================================================
+# Sync Mini Project 7: GitOps with ArgoCD
+# ============================================================================
+log_info "Syncing Project 7: GitOps with ArgoCD"
+PROJECT_DIR="$PORTFOLIO_ROOT/mini-projects/project7-gitops-argocd"
+
+if [[ -d "$PROJECT_DIR" ]]; then
+    mkdir -p "$DOCS_DEST/projects/07-gitops-argocd"
+    sync_file \
+        "$PROJECT_DIR/README.md" \
+        "$DOCS_DEST/projects/07-gitops-argocd/index.md" \
+        "Project 7: GitOps with ArgoCD" \
+        "simple/argo"
+else
+    log_warning "Project directory not found: $PROJECT_DIR"
+fi
+
+# ============================================================================
 # Sync VPS Demo Platform
 # ============================================================================
 log_info "Syncing VPS Demo Platform"

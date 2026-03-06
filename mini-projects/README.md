@@ -16,3 +16,4 @@ A collection of hands-on projects covering modern infrastructure automation, con
 | 4 | [Prometheus + Grafana](project4-monitoring-stack/) | Prometheus, Grafana, Node Exporter, Flask | Dashboards-as-code monitoring stack for system and application metrics |
 | 5 | [GitHub Actions CI/CD](project5-cicd-github-actions/) | GitHub Actions, Docker, GHCR, Kubernetes | Three-job pipeline: test, build to GHCR, deploy to Minikube |
 | 6 | [Helm Chart Packaging](project6-helm-chart/) | Helm 3, Kubernetes, Go templates | Package the Flask app as a reusable Helm chart with environment-specific values overrides |
+| 7 | [GitOps with ArgoCD](project7-gitops-argocd/) | ArgoCD, Kubernetes, Helm, GitHub Actions | Pull-based GitOps: ArgoCD syncs cluster from Git with self-healing and automated image tag updates |

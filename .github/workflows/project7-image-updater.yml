@@ -1,0 +1,72 @@
+name: Project 7 - Image Tag Updater
+
+# Triggered automatically after Project 5's CI/CD pipeline completes
+# successfully on main. Derives the new image tag from the triggering
+# commit SHA and writes it into the ArgoCD prod Application manifest.
+# ArgoCD detects the Git change and syncs the cluster automatically.
+#
+# This workflow does NOT modify any Project 5 or Project 6 files —
+# it only writes to project7-gitops-argocd/argocd/apps/flask-tasks-prod.yaml.
+
+on:
+  workflow_run:
+    workflows: ["Project 5 - CI/CD Pipeline"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  update-image-tag:
+    name: Update prod image tag
+    runs-on: ubuntu-latest
+    # Only run when the upstream pipeline succeeded — don't update to a broken image.
+    if: github.event.workflow_run.conclusion == 'success'
+
+    permissions:
+      contents: write  # Required to commit and push the updated manifest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive image tag from triggering commit
+        id: tag
+        run: |
+          SHORT_SHA=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+          echo "tag=sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "Derived image tag: sha-${SHORT_SHA}"
+
+      - name: Update image tag in ArgoCD prod Application
+        run: |
+          APP_FILE="mini-projects/project7-gitops-argocd/argocd/apps/flask-tasks-prod.yaml"
+          NEW_TAG="${{ steps.tag.outputs.tag }}"
+
+          # Replace the managed image tag line. The trailing comment acts as an
+          # anchor so only this specific line is matched, not any other tag: fields.
+          sed -i \
+            "s|tag: \"[^\"]*\"  # image-tag: managed by project7-image-updater workflow|tag: \"${NEW_TAG}\"  # image-tag: managed by project7-image-updater workflow|" \
+            "$APP_FILE"
+
+          echo "Updated image tag to: ${NEW_TAG}"
+          grep "image-tag" "$APP_FILE"
+
+      - name: Commit and push updated manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add mini-projects/project7-gitops-argocd/argocd/apps/flask-tasks-prod.yaml
+
+          # Only commit if the file actually changed (idempotent if tag didn't change)
+          if git diff --staged --quiet; then
+            echo "No change — image tag was already up to date"
+          else
+            # Pull latest to avoid push rejection if another commit landed meanwhile
+            git pull --rebase origin main
+
+            git commit -m "Update flask-tasks-prod image tag to ${{ steps.tag.outputs.tag }}"
+            git push origin main
+            echo "Manifest updated and pushed — ArgoCD will sync within its poll interval"
+          fi

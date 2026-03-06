@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flask-tasks-dev
+  namespace: argocd
+  labels:
+    project: flask-tasks
+    environment: dev
+  annotations:
+    # Sync manually so dev deployments require a deliberate action.
+    # Run: argocd app sync flask-tasks-dev
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/christosm-dev/portfolio.git
+    targetRevision: main
+    # ArgoCD renders the Helm chart from Project 6 directly.
+    # No files outside this project directory are modified.
+    path: mini-projects/project6-helm-chart/chart/flask-tasks
+    helm:
+      # Inline values override — dev environment settings.
+      # Using inline rather than a valueFiles reference keeps this Application
+      # self-contained: no files need to exist relative to the chart path.
+      values: |
+        replicaCount: 1
+        image:
+          pullPolicy: Always
+          tag: "latest"
+        service:
+          type: NodePort
+          port: 80
+          targetPort: 5000
+          nodePort: 30091
+        config:
+          appEnv: development
+          logLevel: DEBUG
+          maxTasks: "100"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+        autoscaling:
+          enabled: false
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: flask-tasks-dev
+
+  syncPolicy:
+    # Manual sync — dev deployments are intentional, not automatic.
+    syncOptions:
+      - CreateNamespace=true
