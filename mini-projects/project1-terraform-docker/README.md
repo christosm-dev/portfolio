@@ -7,30 +7,29 @@
 This project demonstrates Terraform fundamentals using the Docker provider to provision infrastructure locally. The Terraform configuration pulls an official NGINX image, creates a container with port mapping, and manages the full lifecycle (init, plan, apply, destroy) - demonstrating declarative Infrastructure as Code principles without requiring cloud provider accounts.
 
 ```
-┌──────────────────────────────────────────┐
-│               Local Machine              │
-│                                          │
-│  terraform apply                         │
-│       │                                  │
-│       ▼                                  │
-│  ┌─────────────────┐                     │
-│  │    Terraform     │  reads/writes       │
-│  │   terraform.    │◄───────────────┐    │
-│  │   tfstate        │                │    │
-│  └────────┬────────┘                │    │
-│           │ Docker provider API     │    │
-│           ▼                         │    │
-│  ┌──────────────────────────────┐   │    │
-│  │        Docker Engine         │   │    │
-│  │  ┌──────────────────────┐   │   │    │
-│  │  │   NGINX Container    │   │   │    │
-│  │  │   port 8080 → 80     │   │   │    │
-│  │  └──────────────────────┘   │   │    │
-│  └──────────────────────────────┘   │    │
-└──────────────────────────────────────────┘
-              │
-              ▼
-    http://localhost:8080
+┌───────────────────────────────────────────────────────┐
+│                     Local Machine                     │
+│                                                       │
+│  terraform apply                                      │
+│       │                                               │
+│       ▼                                               │
+│  ┌──────────┐  lock + read/write state  ┌──────────┐  │
+│  │Terraform │ ────────────────────────► │  Consul  │  │
+│  │   CLI    │ ◄──────────────────────── │ :8500    │  │
+│  └────┬─────┘                           └──────────┘  │
+│       │ Docker provider API                           │
+│       ▼                                               │
+│  ┌──────────────────────────────────┐                 │
+│  │          Docker Engine           │                 │
+│  │  ┌────────────┐  ┌────────────┐  │                 │
+│  │  │    NGINX   │  │   Consul   │  │                 │
+│  │  │ :8080→80   │  │   :8500    │  │                 │
+│  │  └────────────┘  └────────────┘  │                 │
+│  └──────────────────────────────────┘                 │
+└───────────────────────────────────────────────────────┘
+         │                    │
+         ▼                    ▼
+ http://localhost:8080   http://localhost:8500 (UI)
 ```
 
 ## Technology Stack
@@ -47,17 +46,20 @@ This project demonstrates Terraform fundamentals using the Docker provider to pr
 - Declarative infrastructure provisioning with Terraform HCL
 - Docker provider integration for local container management
 - Resource dependency chaining (image → container)
-- State management for tracking deployed infrastructure
+- **Remote state backend** via Consul with state locking
 - Output values for deployment information
 
 ## Codebase Overview
 
 ```
 project1-terraform-docker/
-├── main.tf           # Core Terraform config: provider, image, and container resources
-├── outputs.tf        # Output definitions: container ID, name, image ID, access URL
-├── .gitignore        # Excludes Terraform state files and working directories
-└── README.md         # This file
+├── main.tf                    # Core Terraform config: provider, image, and container resources
+├── backend.tf                 # Consul remote state backend configuration
+├── variables.tf               # Input variable declarations with defaults and validation
+├── outputs.tf                 # Output definitions: container ID, name, image ID, access URL
+├── docker-compose.consul.yml  # Runs a local Consul node as the state backend
+├── .gitignore                 # Excludes Terraform state files and working directories
+└── README.md                  # This file
 ```
 
 ## Quick Start
@@ -67,35 +69,60 @@ project1-terraform-docker/
 ```bash
 terraform version   # must be v1.x
 docker info         # Docker daemon must be running
+docker compose version
 ```
 
-### Deploy
+### 1. Start Consul (state backend)
+
+Consul must be running before `terraform init` so Terraform can connect to the backend.
 
 ```bash
 cd mini-projects/project1-terraform-docker
 
-# Download the Docker provider plugin
-terraform init
+docker compose -f docker-compose.consul.yml up -d
+```
 
+Consul UI is now available at **http://localhost:8500**. You can watch state appear there after `apply`.
+
+### 2. Initialise Terraform
+
+`terraform init` reads `backend.tf` and connects to Consul. If you had a previous local state file, Terraform will offer to migrate it automatically.
+
+```bash
+terraform init
+```
+
+Expected output includes:
+```
+Initializing the backend...
+Successfully configured the backend "consul"!
+```
+
+### 3. Deploy
+
+```bash
 # Preview the resources Terraform will create
 terraform plan
 
-# Create the NGINX container
+# Create the NGINX container (state is written to Consul, not local disk)
 terraform apply
-
 # Confirm with 'yes' when prompted
 ```
 
 Terraform prints the output values (container name, ID, and access URL) after apply completes.
 
-### Verify
+### 4. Verify
 
 ```bash
+# NGINX web server
 curl http://localhost:8080
 # Expected: NGINX welcome page HTML
+
+# State stored in Consul (raw JSON)
+curl http://localhost:8500/v1/kv/project1/terraform.tfstate?raw
 ```
 
-### Inspect state
+### 5. Inspect state
 
 ```bash
 # List all resources tracked in state
@@ -105,20 +132,38 @@ terraform state list
 terraform state show docker_container.nginx
 ```
 
-### Tear down
+### 6. Tear down
 
 ```bash
+# Remove the NGINX container (state entry in Consul is updated, not deleted)
 terraform destroy
-# Confirm with 'yes' — removes the container and releases the port
+# Confirm with 'yes'
+
+# Stop Consul when you're done
+docker compose -f docker-compose.consul.yml down
 ```
+
+## Terraform Associate Exam Alignment
+
+This project covers **Objective 7: Manage state** directly:
+
+| Exam Topic | Where It Appears |
+|---|---|
+| Purpose of remote state (collaboration, locking, durability) | `backend.tf` comments |
+| `terraform init` backend initialisation and state migration | Step 2 of Quick Start |
+| State locking (preventing concurrent apply corruption) | `lock = true` in `backend.tf` |
+| Inspecting state with `terraform state list` / `state show` | Step 5 of Quick Start |
+| Why state files must not be committed to version control | `.gitignore` entries |
+
+**Interview talking point**: *"I replaced local state with a Consul backend. This means state is no longer on my laptop — it's stored in Consul's key-value store with locking enabled, so two simultaneous `terraform apply` runs can't corrupt it. The pattern maps directly to using S3 + DynamoDB in AWS, which is the production standard."*
 
 ## Future Work
 
-- [ ] Add Terraform variables for container port, image tag, and replica count
-- [ ] Implement remote state backend (S3 or Consul) instead of local state
+- [x] ~~Implement remote state backend (S3 or Consul) instead of local state~~ ✅ Done — Consul backend with locking
 - [ ] Add a second container (e.g. Redis) to demonstrate multi-resource dependencies
 - [ ] Create Terraform modules to make the configuration reusable
 - [ ] Add `terraform fmt` and `terraform validate` as pre-commit hooks
+- [ ] Migrate to S3 backend as an AWS-aligned alternative
 
 ## Resources
 

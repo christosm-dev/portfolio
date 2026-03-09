@@ -24,3 +24,6 @@ crash.*.log
 # OS files
 .DS_Store
 Thumbs.db
+
+# Consul data (if running persistent mode with a volume)
+consul-data/
