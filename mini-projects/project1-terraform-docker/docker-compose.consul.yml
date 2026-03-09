@@ -1,0 +1,25 @@
+# Consul - Local Remote State Backend for Terraform
+#
+# This runs a single-node Consul agent in development mode.
+# Development mode (-dev) starts Consul with an in-memory store,
+# no cluster peers required, and the HTTP API enabled on port 8500.
+#
+# Usage:
+#   docker compose -f docker-compose.consul.yml up -d   # start Consul
+#   docker compose -f docker-compose.consul.yml down    # stop Consul
+#
+# After starting, run `terraform init` to migrate state, then use
+# terraform as normal. State is stored at:
+#   http://localhost:8500/v1/kv/project1/terraform.tfstate
+#
+# NOTE: -dev mode is not persistent across container restarts.
+# For a persistent setup, remove -dev and add a volume mount.
+
+services:
+  consul:
+    image: hashicorp/consul:1.17
+    container_name: consul-tfstate
+    command: agent -dev -client=0.0.0.0 -log-level=warn
+    ports:
+      - "8500:8500"   # HTTP API + Web UI
+    restart: unless-stopped
